@@ -13,7 +13,10 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
+import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
 import org.usfirst.frc.team6419.robot.subsystems.IMU;
+import org.usfirst.frc.team6419.robot.subsystems.Lift;
 import org.usfirst.frc.team6419.robot.subsystems.MecanumDrivetrain;
 
 /**
@@ -26,6 +29,7 @@ import org.usfirst.frc.team6419.robot.subsystems.MecanumDrivetrain;
 public class Robot extends TimedRobot {
 	public static IMU imu = new IMU();
 	public static MecanumDrivetrain drivetrain = new MecanumDrivetrain();
+	public static Lift lift = new Lift(Config.liftMotorPin);
 	public static OI m_oi;
 
 	Command m_autonomousCommand;
@@ -49,7 +53,7 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void disabledInit() {
-
+		drivetrain.configurePID();
 	}
 
 	@Override
@@ -70,8 +74,8 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		m_autonomousCommand = m_chooser.getSelected();
-
+	//	m_autonomousCommand = m_chooser.getSelected();
+		m_autonomousCommand = new DriveToPoint(0, 24);
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
 		 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -99,6 +103,7 @@ public class Robot extends TimedRobot {
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
+		
 		if (m_autonomousCommand != null) {
 			m_autonomousCommand.cancel();
 		}

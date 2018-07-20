@@ -13,27 +13,30 @@ import org.usfirst.frc.team6419.robot.core.Utils;
 import com.analog.adis16448.ADIS16448_IMU;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  *
  */
-public class MecanumDrivetrain extends Subsystem {
+public class MecanumDrivetrain extends PIDSubsystem {
 	
 	private WPI_TalonSRX frontRight, frontLeft, backLeft, backRight;
-	private PID turningPid;
-	
-	public PIDTunings tunings;
-	public boolean fieldRelative;
 	private boolean lastTurn, turningPidActive;
+	
+	public boolean fieldRelative;
 
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
 	
 	public MecanumDrivetrain() {
+		super(0, 0, 0, 5, 0);
 		frontLeft = new WPI_TalonSRX(RobotMap.FRONT_LEFT);
 		frontRight = new WPI_TalonSRX(RobotMap.FRONT_RIGHT);
 		backLeft = new WPI_TalonSRX(RobotMap.BACK_LEFT);
@@ -42,46 +45,62 @@ public class MecanumDrivetrain extends Subsystem {
 		//config the encoders here.
 		//WARNING I configured the sensors to use absolute values instead of relative.
 		//WARNING Two of the encoders will be backwards and need inverted.  
-		frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-		frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-		backLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-		backRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-		
+		frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+		frontRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+		backLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+		backRight.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
 		
 		frontRight.setInverted(true);
 		backRight.setInverted(true);
+		
+		frontLeft.setSensorPhase(true);
+		frontRight.setSensorPhase(true);
+		backLeft.setSensorPhase(true);
+		backRight.setSensorPhase(true);
+		
+		frontLeft.setNeutralMode(NeutralMode.Brake);
+		frontRight.setNeutralMode(NeutralMode.Brake);
+		backLeft.setNeutralMode(NeutralMode.Brake);
+		backRight.setNeutralMode(NeutralMode.Brake);
+		
+		frontLeft.configNominalOutputForward(0, 10);
+		frontLeft.configNominalOutputReverse(0, 10);
+		frontLeft.configPeakOutputForward(1, 10);
+		frontLeft.configPeakOutputReverse(-1, 10);
+		
+		frontRight.configNominalOutputForward(0, 10);
+		frontRight.configNominalOutputReverse(0, 10);
+		frontRight.configPeakOutputForward(1, 10);
+		frontRight.configPeakOutputReverse(-1, 10);
+		
+		backLeft.configNominalOutputForward(0, 10);
+		backLeft.configNominalOutputReverse(0, 10);
+		backLeft.configPeakOutputForward(1, 10);
+		backLeft.configPeakOutputReverse(-1, 10);
+		
+		backRight.configNominalOutputForward(0, 10);
+		backRight.configNominalOutputReverse(0, 10);
+		backRight.configPeakOutputForward(1, 10);
+		backRight.configPeakOutputReverse(-1, 10);
+		
+		frontLeft.selectProfileSlot(0, 0);
+		frontRight.selectProfileSlot(0, 0);
+		backLeft.selectProfileSlot(0, 0);
+		backRight.selectProfileSlot(0, 0);
+		
+		frontLeft.config_kP(0, 0.1, 5);
+		frontRight.config_kP(0, 0.1, 5);
+		backLeft.config_kP(0, 0.1, 5);
+		backRight.config_kP(0, 0.1, 5);
+		
+		//frontRight.setSensorPhase(true);
 		
 		fieldRelative = false;
 		/*if (!SmartDashboard.containsKey("Field Relative")) {
 			SmartDashboard.putBoolean("Field Relative", fieldRelative);
 		}
 		fieldRelative = SmartDashboard.getBoolean("Field Relative", false);*/
-		
-		tunings = new PIDTunings();
-		if (!Preferences.getInstance().containsKey("turningPid-P")) {
-			Preferences.getInstance().putDouble("turningPid-P", 0.1);
-		}
-		tunings.kP = Preferences.getInstance().getDouble("turningPid-P", 0.1);
-		
-		if (!Preferences.getInstance().containsKey("turningPid-I")) {
-			Preferences.getInstance().putDouble("turningPid-I", 0.1);
-		}
-		tunings.kI = Preferences.getInstance().getDouble("turningPid-I", 0.1);
-		
-		if (!Preferences.getInstance().containsKey("turningPid-D")) {
-			Preferences.getInstance().putDouble("turningPid-D", 0.1);
-		}
-		tunings.kD = Preferences.getInstance().getDouble("turningPid-D", 0.1);
-		
-		if (!Preferences.getInstance().containsKey("turningPid-F")) {
-			Preferences.getInstance().putDouble("turningPid-F", 0.1);
-		}
-		tunings.kF = Preferences.getInstance().getDouble("turningPid-F", 0.1);
-		tunings.maxCmd = 1.0;
-		tunings.minCmd = -1.0;
-		turningPid = new PID(tunings);
-		turningPid.setDeadband(0.1 * Math.PI);
-		turningPidActive = true;
+		configurePID();
 		stop();
 	}
 
@@ -89,6 +108,37 @@ public class MecanumDrivetrain extends Subsystem {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     	setDefaultCommand(new HandleMecanumDrive());
+    }
+    
+    /**
+     * Sets the coefficients for the PID loop. I moved this to a method to reinitialize the tunings so the
+     * robot would update from the preferences.
+     */
+    public void configurePID() {
+		System.out.println("Synchronizing PID tunings");
+		
+		if (!Preferences.getInstance().containsKey("turningPid-P")) {
+			Preferences.getInstance().putDouble("turningPid-P", 0.1);
+		}
+		getPIDController().setP(Preferences.getInstance().getDouble("turningPid-P", 0.1));
+		
+		if (!Preferences.getInstance().containsKey("turningPid-I")) {
+			Preferences.getInstance().putDouble("turningPid-I", 0.1);
+		}
+		getPIDController().setI(Preferences.getInstance().getDouble("turningPid-I", 0.1));
+		
+		if (!Preferences.getInstance().containsKey("turningPid-D")) {
+			Preferences.getInstance().putDouble("turningPid-D", 0.1);
+		}
+		getPIDController().setD(Preferences.getInstance().getDouble("turningPid-D", 0.1));
+		
+		if (!Preferences.getInstance().containsKey("turningPid-F")) {
+			Preferences.getInstance().putDouble("turningPid-F", 0.1);
+		}
+		getPIDController().setF(Preferences.getInstance().getDouble("turningPid-F", 0));
+		
+		getPIDController().setOutputRange(-1, 1);
+		getPIDController().setAbsoluteTolerance(0.05 * Math.PI);
     }
     
     /**
@@ -130,14 +180,30 @@ public class MecanumDrivetrain extends Subsystem {
     	return backRight.getSelectedSensorPosition(0);
     }
     
+    public void setSpeedLimit(double limit) {
+    	frontLeft.configPeakOutputForward(limit, 10);
+    	frontLeft.configPeakOutputReverse(-limit, 10);
+    	frontRight.configPeakOutputForward(limit, 10);
+    	frontRight.configPeakOutputReverse(-limit, 10);
+    	backLeft.configPeakOutputForward(limit, 10);
+    	backLeft.configPeakOutputReverse(-limit, 10);
+    	backRight.configPeakOutputForward(limit, 10);
+    	backRight.configPeakOutputReverse(-limit, 10);
+    }
+    
+    /**
+     * Sets a target heading for the robot to follow.
+     * @param heading
+     */
     public void setTargetHeading(double heading) {
     	turningPidActive = true;
-    	turningPid.reset();
-    	turningPid.setSetpoint(heading);
+    	getPIDController().reset();
+    	getPIDController().enable();
+    	getPIDController().setSetpoint(heading);
     }
     
     public boolean targetHeadingReached() {
-    	return Utils.withinRange(Robot.imu.getHeading(), turningPid.getSetpoint() - turningPid.getDeadband(), turningPid.getSetpoint() + turningPid.getDeadband());
+    	return getPIDController().onTarget();
     }
     
     public void drive(double x, double y, double rot) {
@@ -146,12 +212,10 @@ public class MecanumDrivetrain extends Subsystem {
     		theta += Robot.imu.getHeading() % (2.0 * Math.PI);
     	}
     	double r = Math.hypot(x, y);
-    	double _rot = Utils.applyDeadband(rot, 0.2 * Math.PI);
-    	if (Utils.withinRange(rot, -0.1 * Math.PI, 0.1 * Math.PI)) {
+    	double _rot = Utils.applyDeadband(rot, 0.05);
+    	if (Utils.withinRange(rot, -0.1, 0.1)) {
     		if (lastTurn) {
-    			turningPidActive = true;
-    			turningPid.reset();
-    			turningPid.setSetpoint(Robot.imu.getHeading());
+    			setTargetHeading(Robot.imu.getHeading());
     		}
     		lastTurn = false;
     	} else {
@@ -159,7 +223,7 @@ public class MecanumDrivetrain extends Subsystem {
     		lastTurn = true;
     	}
     	if (turningPidActive) {
-    		_rot = turningPid.update(Robot.imu.getHeading());
+    			_rot = getPIDController().get();
     	}
     	double fl = r * Math.sin(theta + Math.PI / 4.0) + _rot;
     	double fr = r * Math.cos(theta + Math.PI / 4.0) - _rot;
@@ -185,7 +249,7 @@ public class MecanumDrivetrain extends Subsystem {
     		theta += Robot.imu.getHeading() % (2.0 * Math.PI);
     	}
     	double r = Math.min(Math.hypot(x, y), 1.0);
-    	double _rot = turningPid.update(Robot.imu.getHeading());
+    	double _rot = getPIDController().get();
     	double fl = r * Math.sin(theta + Math.PI / 4.0) + _rot;
     	double fr = r * Math.cos(theta + Math.PI / 4.0) - _rot;
     	double bl = r * Math.cos(theta + Math.PI / 4.0) + _rot;
@@ -234,19 +298,43 @@ public class MecanumDrivetrain extends Subsystem {
     }
     
     public boolean flTargetReached() {
-    	return Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;
+    	return Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontLeft.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean frTargetReached() {
-    	return Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;
+    	return Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean blTargetReached() {
-    	return Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;
+    	return Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backLeft.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean brTargetReached() {
-    	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;
+    	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
+    
+    @Override
+    public void initSendable(SendableBuilder builder) {
+    	System.out.println("Initializing sendable");
+    	builder.addBooleanProperty("PID active", () -> turningPidActive, null);
+    	builder.addDoubleArrayProperty("FL", () -> new double[] {frontLeft.get(), frontLeft.getSelectedSensorPosition(0), frontLeft.getSelectedSensorVelocity(0), (frontLeft.getControlMode().value == 1) ? frontLeft.getClosedLoopTarget(0) : 0}, null);
+    	builder.addDoubleArrayProperty("FR", () -> new double[] {frontRight.get(), frontRight.getSelectedSensorPosition(0), frontRight.getSelectedSensorVelocity(0), (frontRight.getControlMode().value == 1) ? frontRight.getClosedLoopTarget(0) : 0}, null);
+    	builder.addDoubleArrayProperty("BL", () -> new double[] {backLeft.get(), backLeft.getSelectedSensorPosition(0), backLeft.getSelectedSensorVelocity(0), (backLeft.getControlMode().value == 1) ? backLeft.getClosedLoopTarget(0) : 0}, null);
+    	builder.addDoubleArrayProperty("BR", () -> new double[] {backRight.get(), backRight.getSelectedSensorPosition(0), backRight.getSelectedSensorVelocity(0), (backRight.getControlMode().value == 1) ? backRight.getClosedLoopTarget(0) : 0}, null);
+    	System.out.println("Properties added");
+    	super.initSendable(builder);
+    }
+
+	@Override
+	protected double returnPIDInput() {
+		// TODO Auto-generated method stub
+		return Robot.imu.getHeading();
+	}
+
+	@Override
+	protected void usePIDOutput(double output) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 

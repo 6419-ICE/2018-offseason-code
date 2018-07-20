@@ -8,7 +8,10 @@
 package org.usfirst.frc.team6419.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import org.usfirst.frc.team6419.robot.commands.*;
 
 /**
@@ -16,6 +19,7 @@ import org.usfirst.frc.team6419.robot.commands.*;
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI {
+	
 	//// CREATING BUTTONS
 	// One type of button is a joystick button which is any button on a
 	//// joystick.
@@ -45,15 +49,16 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 	
 	Joystick left, right;
-	JoystickButton straightDrive, resetGyro;
+	JoystickButton straightDrive;
 	
 	public OI() {
 		left = new Joystick(0);
 		right = new Joystick(1);
 		straightDrive = new JoystickButton(right, 1);
 		straightDrive.whileHeld(new StraightDrive());
-		resetGyro = new JoystickButton(right, 4);
-		resetGyro.whenPressed(new ResetGyro());
+		SmartDashboard.putData("Reset Gyro", new ResetGyro());
+		SmartDashboard.putData("Sync PIDs", new SyncPIDTunings());
+		SmartDashboard.putData("Calibrate IMU", new CalibrateIMU());
 	}
 	
 	public double getRightX() {
@@ -61,11 +66,11 @@ public class OI {
 	}
 	
 	public double getRightY() {
-		return right.getRawAxis(1);
+		return -right.getRawAxis(1);
 	}
 	
 	public double getRightZ() {
-		if (right.getAxisCount() > 3) {
+		if (right.getAxisCount() >= 3) {
 			return right.getRawAxis(2);
 		}
 		System.out.println("Warning: Right joystick does not have 3 axes, but is being queried as if it did");
@@ -77,11 +82,11 @@ public class OI {
 	}
 	
 	public double getLeftY() {
-		return left.getRawAxis(1);
+		return -left.getRawAxis(1);
 	}
 	
 	public double getLeftZ() {
-		if (left.getAxisCount() > 3) {
+		if (left.getAxisCount() >= 3) {
 			return left.getRawAxis(2);
 		}
 		System.out.println("Warning: Left joystick does not have 3 axes, but is being queried as if it did");
