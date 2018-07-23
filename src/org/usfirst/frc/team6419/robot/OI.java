@@ -49,7 +49,7 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 	
 	Joystick left, right;
-	JoystickButton straightDrive;
+	JoystickButton straightDrive, intake, outtake, openIntake, closeIntake;
 	
 	public OI() {
 		left = new Joystick(0);
@@ -59,6 +59,21 @@ public class OI {
 		SmartDashboard.putData("Reset Gyro", new ResetGyro());
 		SmartDashboard.putData("Sync PIDs", new SyncPIDTunings());
 		SmartDashboard.putData("Calibrate IMU", new CalibrateIMU());
+		
+		intake = new JoystickButton(right, 3);
+		outtake = new JoystickButton(right, 5);
+		openIntake = new JoystickButton(left, 6);
+		closeIntake = new JoystickButton(left, 4);
+		
+		intake.whileHeld(new IntakeCube());
+		outtake.whileHeld(new OuttakeCube());
+		openIntake.whenPressed(new OpenIntake());
+		closeIntake.whenPressed(new CloseIntake());
+		
+	}
+	
+	public Joystick getRightJoystick() {
+		return right;
 	}
 	
 	public double getRightX() {
@@ -66,7 +81,7 @@ public class OI {
 	}
 	
 	public double getRightY() {
-		return -right.getRawAxis(1);
+		return right.getRawAxis(1);
 	}
 	
 	public double getRightZ() {
@@ -77,12 +92,16 @@ public class OI {
 		return 0;
 	}
 	
+	public Joystick getLeftJoystick() {
+		return left;
+	}
+	
 	public double getLeftX() {
 		return left.getRawAxis(0);
 	}
 	
 	public double getLeftY() {
-		return -left.getRawAxis(1);
+		return left.getRawAxis(1);
 	}
 	
 	public double getLeftZ() {

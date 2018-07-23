@@ -14,6 +14,7 @@ import com.analog.adis16448.ADIS16448_IMU;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Preferences;
@@ -63,35 +64,70 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		backLeft.setNeutralMode(NeutralMode.Brake);
 		backRight.setNeutralMode(NeutralMode.Brake);
 		
-		frontLeft.configNominalOutputForward(0, 10);
-		frontLeft.configNominalOutputReverse(0, 10);
-		frontLeft.configPeakOutputForward(1, 10);
-		frontLeft.configPeakOutputReverse(-1, 10);
+		frontLeft.configNominalOutputForward(0, 0);
+		frontLeft.configNominalOutputReverse(0, 0);
+		frontLeft.configPeakOutputForward(1, 0);
+		frontLeft.configPeakOutputReverse(-1, 0);
 		
-		frontRight.configNominalOutputForward(0, 10);
-		frontRight.configNominalOutputReverse(0, 10);
-		frontRight.configPeakOutputForward(1, 10);
-		frontRight.configPeakOutputReverse(-1, 10);
+		frontRight.configNominalOutputForward(0, 0);
+		frontRight.configNominalOutputReverse(0, 0);
+		frontRight.configPeakOutputForward(1, 0);
+		frontRight.configPeakOutputReverse(-1, 0);
 		
-		backLeft.configNominalOutputForward(0, 10);
-		backLeft.configNominalOutputReverse(0, 10);
-		backLeft.configPeakOutputForward(1, 10);
-		backLeft.configPeakOutputReverse(-1, 10);
+		backLeft.configNominalOutputForward(0, 0);
+		backLeft.configNominalOutputReverse(0, 0);
+		backLeft.configPeakOutputForward(1, 0);
+		backLeft.configPeakOutputReverse(-1, 0);
 		
-		backRight.configNominalOutputForward(0, 10);
-		backRight.configNominalOutputReverse(0, 10);
-		backRight.configPeakOutputForward(1, 10);
-		backRight.configPeakOutputReverse(-1, 10);
+		backRight.configNominalOutputForward(0, 0);
+		backRight.configNominalOutputReverse(0, 0);
+		backRight.configPeakOutputForward(1, 0);
+		backRight.configPeakOutputReverse(-1, 0);
 		
 		frontLeft.selectProfileSlot(0, 0);
 		frontRight.selectProfileSlot(0, 0);
 		backLeft.selectProfileSlot(0, 0);
 		backRight.selectProfileSlot(0, 0);
 		
-		frontLeft.config_kP(0, 0.1, 5);
-		frontRight.config_kP(0, 0.1, 5);
-		backLeft.config_kP(0, 0.1, 5);
-		backRight.config_kP(0, 0.1, 5);
+		frontLeft.configAllowableClosedloopError(0, 10, 0);
+		frontRight.configAllowableClosedloopError(0, 10, 0);
+		backLeft.configAllowableClosedloopError(0, 10, 0);
+		backRight.configAllowableClosedloopError(0, 10, 0);
+		
+		frontLeft.config_kF(0, 0, 0);
+		frontLeft.config_kP(0, 0.1, 0);
+		frontLeft.config_kI(0, 0, 0);
+		frontLeft.config_kD(0, 0, 0);
+		
+		frontRight.config_kF(0, 0, 0);
+		frontRight.config_kP(0, 0.1, 0);
+		frontRight.config_kI(0, 0, 0);
+		frontRight.config_kD(0, 0, 0);
+		
+		backLeft.config_kF(0, 0, 0);
+		backLeft.config_kP(0, 0.1, 0);
+		backLeft.config_kI(0, 0, 0);
+		backLeft.config_kD(0, 0, 0);
+		
+		backRight.config_kF(0, 0, 0);
+		backRight.config_kP(0, 0.1, 0);
+		backRight.config_kI(0, 0, 0);
+		backRight.config_kD(0, 0, 0);
+		
+		int absPos = frontLeft.getSensorCollection().getPulseWidthPosition();
+		absPos &= 0xfff;
+		absPos *= -1;
+		frontLeft.setSelectedSensorPosition(absPos, 0, 0);
+		absPos = frontRight.getSensorCollection().getPulseWidthPosition();
+		absPos &= 0xfff;
+		frontRight.setSelectedSensorPosition(absPos, 0, 0);
+		absPos = backLeft.getSensorCollection().getPulseWidthPosition();
+		absPos &= 0xfff;
+		absPos *= -1;
+		backLeft.setSelectedSensorPosition(absPos, 0, 0);
+		absPos = backRight.getSensorCollection().getPulseWidthPosition();
+		absPos &= 0xfff;
+		backRight.setSelectedSensorPosition(absPos, 0, 0);
 		
 		//frontRight.setSensorPhase(true);
 		

@@ -10,4 +10,6 @@ public class Config {
 	public static final double stpMaxTickSpeed = 0.1 * ticksPerRev;
 	public static final int liftMotorPin = 0;
 	public static final int driveTalonEncoderErrorThreshold = 15;
+	public static final int intakeSolenoidPin0 = 0, intakeSolenoidPin1 = 3;
+	public static final int intakeR0 = 1, intakeR1 = 2, intakeL0 = 3, intakeL1 = 4;
 }

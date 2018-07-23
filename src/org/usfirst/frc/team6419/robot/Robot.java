@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
 import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
 import org.usfirst.frc.team6419.robot.subsystems.IMU;
+import org.usfirst.frc.team6419.robot.subsystems.Intake;
 import org.usfirst.frc.team6419.robot.subsystems.Lift;
 import org.usfirst.frc.team6419.robot.subsystems.MecanumDrivetrain;
 
@@ -30,6 +31,7 @@ public class Robot extends TimedRobot {
 	public static IMU imu = new IMU();
 	public static MecanumDrivetrain drivetrain = new MecanumDrivetrain();
 	public static Lift lift = new Lift(Config.liftMotorPin);
+	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1);
 	public static OI m_oi;
 
 	Command m_autonomousCommand;
