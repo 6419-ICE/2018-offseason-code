@@ -24,30 +24,30 @@ public class DriveToPoint extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	theta = Math.atan2(_y, _x) - Math.PI / 2.0;
+    	theta = -(Math.atan2(_y, _x) - Math.PI / 2.0);
     	dist = Math.hypot(_x, _y);
+    	Robot.imu.reset();
     	Robot.drivetrain.setTargetHeading(theta);
     	Robot.drivetrain.resetEncoders();
-    	Robot.drivetrain.setSpeedLimit(0.5);
+    	Robot.log(theta);
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	if (stage == 0) {
     		if (!Robot.drivetrain.targetHeadingReached()) {
-    			System.out.println("Turning");
     			Robot.drivetrain.drive(0, 0, 0);
     		} else {
-    			System.out.println("Set");
-    			System.out.println(dist * Config.ticksPerInch);
+    			Robot.log("Set");
+    			Robot.log(dist * Config.ticksPerInch);
     			stage = 1;
     			Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
     			Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
     			Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
     			Robot.drivetrain.setBRTarget(dist * Config.ticksPerInch);
+    			Robot.drivetrain.setTurningPidEnabled(false);
     		}
     	} else {
-    		System.out.println("Driving");
     		//Robot.drivetrain.drive(0, 0, 0);
     	}
     }
@@ -59,7 +59,7 @@ public class DriveToPoint extends Command {
         		Robot.drivetrain.frTargetReached() &&
         		Robot.drivetrain.blTargetReached() &&
         		Robot.drivetrain.brTargetReached()) {
-        	System.out.println("Finished");
+        	Robot.log("Finished");
         	return true;
         }
         return false;
@@ -67,7 +67,6 @@ public class DriveToPoint extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
-    	Robot.drivetrain.setSpeedLimit(1);
     	Robot.drivetrain.stop();
     }
 

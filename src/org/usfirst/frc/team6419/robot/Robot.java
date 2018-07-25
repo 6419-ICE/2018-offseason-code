@@ -17,11 +17,11 @@ package org.usfirst.frc.team6419.robot;
 
 
 import edu.wpi.first.wpilibj.TimedRobot;
-
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 import edu.wpi.first.wpilibj.command.Scheduler;
-
+import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -67,6 +67,23 @@ public class Robot extends TimedRobot {
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
 
 
+	public static void log(String fmt, Object... args) {
+		System.out.print("[");
+		System.out.print(Timer.getFPGATimestamp());
+		System.out.println("] " + String.format(fmt, args));
+	}
+	
+	public static void log(Subsystem subsystem, Object msg) {
+		System.out.print("[");
+		System.out.print(Timer.getFPGATimestamp());
+		System.out.println("] " + subsystem.getName() + ": " + String.valueOf(msg));
+	}
+	
+	public static void log(Object msg) {
+		System.out.print("[");
+		System.out.print(Timer.getFPGATimestamp());
+		System.out.println("] " + String.valueOf(msg));
+	}
 	
 	/**
 	 
@@ -145,7 +162,7 @@ public class Robot extends TimedRobot {
 
 	//	m_autonomousCommand = m_chooser.getSelected();
 
-		m_autonomousCommand = new DriveToPoint(0, 24);
+		m_autonomousCommand = new SwitchAuto();
 
 		/*
 
@@ -204,6 +221,7 @@ public class Robot extends TimedRobot {
 			m_autonomousCommand.cancel();
 
 		}
+		imu.reset();
 
 	}
 

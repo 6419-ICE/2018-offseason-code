@@ -181,10 +181,11 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * set the encoders positions to 0. 
      */
     public void resetEncoders() {
-    	frontLeft.setSelectedSensorPosition(0, 0, 0);
-    	frontRight.setSelectedSensorPosition(0, 0, 0);
-    	backLeft.setSelectedSensorPosition(0, 0, 0);
-    	backRight.setSelectedSensorPosition(0, 0, 0);
+    	Robot.log(this, "Encoders reset");
+    	frontLeft.setSelectedSensorPosition(0, 0, 10);
+    	frontRight.setSelectedSensorPosition(0, 0, 10);
+    	backLeft.setSelectedSensorPosition(0, 0, 10);
+    	backRight.setSelectedSensorPosition(0, 0, 10);
     }
        
     /**
@@ -232,6 +233,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * @param heading
      */
     public void setTargetHeading(double heading) {
+    	Robot.log(this, String.format("Target heading set to %f", heading));
     	turningPidActive = true;
     	getPIDController().reset();
     	getPIDController().enable();
@@ -240,6 +242,17 @@ public class MecanumDrivetrain extends PIDSubsystem {
     
     public boolean targetHeadingReached() {
     	return getPIDController().onTarget();
+    }
+    
+    public void setTurningPidEnabled(boolean enabled) {
+    	turningPidActive = enabled;
+    	if (enabled) {
+    		Robot.log(this, "Turning PID enabled");
+    		getPIDController().enable();
+    	} else {
+    		Robot.log(this, "Turning PID disabled");
+    		getPIDController().disable();
+    	}
     }
     
     public void drive(double x, double y, double rot) {
@@ -334,19 +347,19 @@ public class MecanumDrivetrain extends PIDSubsystem {
     }
     
     public boolean flTargetReached() {
-    	return Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontLeft.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontLeft.getClosedLoopTarget(0) - frontLeft.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean frTargetReached() {
-    	return Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontRight.getClosedLoopTarget(0) - frontRight.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean blTargetReached() {
-    	return Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backLeft.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backLeft.getClosedLoopTarget(0) - backLeft.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     public boolean brTargetReached() {
-    	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;// && Math.abs(backRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
     @Override
