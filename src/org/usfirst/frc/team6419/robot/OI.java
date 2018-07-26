@@ -59,6 +59,7 @@ public class OI {
 		SmartDashboard.putData("Reset Gyro", new ResetGyro());
 		SmartDashboard.putData("Sync PIDs", new SyncPIDTunings());
 		SmartDashboard.putData("Calibrate IMU", new CalibrateIMU());
+		SmartDashboard.putData("Test Encoders", new TestEncoders());
 		
 		intake = new JoystickButton(right, 3);
 		outtake = new JoystickButton(right, 5);

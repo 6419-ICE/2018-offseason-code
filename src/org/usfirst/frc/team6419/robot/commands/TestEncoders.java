@@ -1,27 +1,24 @@
-package org.usfirst.frc.team6419.robot.commands.core;
+package org.usfirst.frc.team6419.robot.commands;
 
 import org.usfirst.frc.team6419.robot.Robot;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class Wait extends Command {
-	
-	private double _time, endTime;
+public class TestEncoders extends Command {
 
-    public Wait(double time) {
+    public TestEncoders() {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-    	_time = time;
+    	requires(Robot.drivetrain);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	endTime = Timer.getFPGATimestamp() + _time;
-    	Robot.log(this, String.format("Waiting until %f (current is %f)", endTime, Timer.getFPGATimestamp()));
+    	Robot.drivetrain.resetEncoders();
+    	Robot.drivetrain.setFLTarget(5 * 4096);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -30,16 +27,17 @@ public class Wait extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Timer.getFPGATimestamp() >= endTime;
+        return Robot.drivetrain.flTargetReached();
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	
+    	Robot.drivetrain.stop();
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+    	end();
     }
 }

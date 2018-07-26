@@ -16,6 +16,7 @@ package org.usfirst.frc.team6419.robot;
 
 
 
+import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
@@ -73,10 +74,10 @@ public class Robot extends TimedRobot {
 		System.out.println("] " + String.format(fmt, args));
 	}
 	
-	public static void log(Subsystem subsystem, Object msg) {
+	public static void log(Sendable src, Object msg) {
 		System.out.print("[");
 		System.out.print(Timer.getFPGATimestamp());
-		System.out.println("] " + subsystem.getName() + ": " + String.valueOf(msg));
+		System.out.println("] " + src.getName() + ": " + String.valueOf(msg));
 	}
 	
 	public static void log(Object msg) {
@@ -162,7 +163,7 @@ public class Robot extends TimedRobot {
 
 	//	m_autonomousCommand = m_chooser.getSelected();
 
-		m_autonomousCommand = new SwitchAuto();
+		m_autonomousCommand = new DriveToPoint(10, 0);
 
 		/*
 

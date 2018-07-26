@@ -3,6 +3,7 @@ package org.usfirst.frc.team6419.robot.commands.core;
 import org.usfirst.frc.team6419.robot.Config;
 import org.usfirst.frc.team6419.robot.Robot;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -12,6 +13,7 @@ public class DriveToPoint extends Command {
 	
 	private double _x, _y, theta, dist;
 	private int stage;
+	private double endTime;
 
     public DriveToPoint(double x, double y) {
         // Use requires() here to declare subsystem dependencies
@@ -29,7 +31,7 @@ public class DriveToPoint extends Command {
     	Robot.imu.reset();
     	Robot.drivetrain.setTargetHeading(theta);
     	Robot.drivetrain.resetEncoders();
-    	Robot.log(theta);
+    	Robot.log(this, theta);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -38,16 +40,20 @@ public class DriveToPoint extends Command {
     		if (!Robot.drivetrain.targetHeadingReached()) {
     			Robot.drivetrain.drive(0, 0, 0);
     		} else {
-    			Robot.log("Set");
-    			Robot.log(dist * Config.ticksPerInch);
+    			endTime = Timer.getFPGATimestamp() + 2;
     			stage = 1;
-    			Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
-    			Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
-    			Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
-    			Robot.drivetrain.setBRTarget(dist * Config.ticksPerInch);
     			Robot.drivetrain.setTurningPidEnabled(false);
     		}
+    	} else if (Timer.getFPGATimestamp() >= endTime && stage != 2) {
+    		Robot.log(this, "Set");
+			Robot.log(dist * Config.ticksPerInch);
+			stage = 2;
+			Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
+			Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
+			Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
+			Robot.drivetrain.setBRTarget(dist * Config.ticksPerInch);
     	} else {
+    		Robot.log(this, Robot.drivetrain.getFLSpeed() - Robot.drivetrain.getFRSpeed());
     		//Robot.drivetrain.drive(0, 0, 0);
     	}
     }
@@ -59,7 +65,7 @@ public class DriveToPoint extends Command {
         		Robot.drivetrain.frTargetReached() &&
         		Robot.drivetrain.blTargetReached() &&
         		Robot.drivetrain.brTargetReached()) {
-        	Robot.log("Finished");
+        	Robot.log(this, "Finished");
         	return true;
         }
         return false;

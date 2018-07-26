@@ -362,6 +362,22 @@ public class MecanumDrivetrain extends PIDSubsystem {
     	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;// && Math.abs(backRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
     }
     
+    public double getFLSpeed() {
+    	return frontLeft.getSelectedSensorVelocity(0);
+    }
+    
+    public double getFRSpeed() {
+    	return frontRight.getSelectedSensorVelocity(0);
+    }
+    
+    public double getBLSpeed() {
+    	return backLeft.getSelectedSensorVelocity(0);
+    }
+    
+    public double getBRSpeed() {
+    	return backRight.getSelectedSensorVelocity(0);
+    }
+    
     @Override
     public void initSendable(SendableBuilder builder) {
     	System.out.println("Initializing sendable");
