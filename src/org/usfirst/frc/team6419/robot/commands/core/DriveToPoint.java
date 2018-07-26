@@ -48,6 +48,8 @@ public class DriveToPoint extends Command {
     		Robot.log(this, "Set");
 			Robot.log(dist * Config.ticksPerInch);
 			stage = 2;
+		// Resetting the IMU might make the Talons happy?
+		Robot.imu.reset();
 			Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
 			Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
 			Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
