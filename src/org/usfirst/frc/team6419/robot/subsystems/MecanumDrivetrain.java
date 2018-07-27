@@ -30,7 +30,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
 	
 	private WPI_TalonSRX frontRight, frontLeft, backLeft, backRight;
 	private boolean lastTurn, turningPidActive;
-	
+	private boolean follow = false;
 	public boolean fieldRelative;
 
     // Put methods for controlling this subsystem
@@ -53,10 +53,10 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		
 		frontRight.setInverted(true);
 		backRight.setInverted(true);
-		
-		frontLeft.setSensorPhase(true);
+	
+		frontLeft.setSensorPhase(false);
 		frontRight.setSensorPhase(true);
-		backLeft.setSensorPhase(true);
+		backLeft.setSensorPhase(false);
 		backRight.setSensorPhase(true);
 		
 		frontLeft.setNeutralMode(NeutralMode.Brake);
@@ -139,7 +139,19 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		configurePID();
 		stop();
 	}
-
+	public void follow() {
+		Robot.log(this, !follow);
+		follow = !follow;
+		if(follow) {
+			backLeft.follow(backRight);
+			frontLeft.follow(frontRight);
+		} else {
+			backLeft.set(ControlMode.PercentOutput, 0);
+			frontLeft.set(ControlMode.PercentOutput, 0);
+		}
+		
+		
+	}
     public void initDefaultCommand() {
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
@@ -324,6 +336,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * TODO: Should we set the motors to brake or leave them on coast?
      */
     public void stop() {
+    	Robot.log(this, "Stopping drive");
     	frontLeft.set(ControlMode.PercentOutput, 0);
     	frontRight.set(ControlMode.PercentOutput, 0);
     	backLeft.set(ControlMode.PercentOutput, 0);
@@ -331,18 +344,22 @@ public class MecanumDrivetrain extends PIDSubsystem {
     }
     
     public void setFLTarget(double target) {
-    	frontLeft.set(ControlMode.Position, target);
+    	Robot.log(this, "Front left target: " + target);
+    	frontLeft.set(ControlMode.Position, -target);
     }
     
     public void setFRTarget(double target) {
+    	Robot.log(this, "Front right Target: " + target);
     	frontRight.set(ControlMode.Position, target);
     }
     
     public void setBLTarget(double target) {
-    	backLeft.set(ControlMode.Position, target);
+    	Robot.log(this, "Back Left Target: " + target);
+    	backLeft.set(ControlMode.Position, -target);
     }
     
     public void setBRTarget(double target) {
+    	Robot.log(this, "Back Right target: " + target);
     	backRight.set(ControlMode.Position, target);
     }
     
@@ -376,6 +393,22 @@ public class MecanumDrivetrain extends PIDSubsystem {
     
     public double getBRSpeed() {
     	return backRight.getSelectedSensorVelocity(0);
+    }
+    
+    public void setFLPower(double power) {
+    	frontLeft.set(ControlMode.PercentOutput, power);
+    }
+    
+    public void setFRPower(double power) {
+    	frontRight.set(ControlMode.PercentOutput, power);
+    }
+    
+    public void setBLPower(double power) {
+    	backLeft.set(ControlMode.PercentOutput, power);
+    }
+    
+    public void setBRPower(double power) {
+    	backRight.set(ControlMode.PercentOutput, power);
     }
     
     @Override

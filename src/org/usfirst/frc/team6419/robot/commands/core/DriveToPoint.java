@@ -14,6 +14,7 @@ public class DriveToPoint extends Command {
 	private double _x, _y, theta, dist;
 	private int stage;
 	private double endTime;
+	private boolean finished;
 
     public DriveToPoint(double x, double y) {
         // Use requires() here to declare subsystem dependencies
@@ -27,46 +28,61 @@ public class DriveToPoint extends Command {
     // Called just before this Command runs the first time
     protected void initialize() {
     	theta = -(Math.atan2(_y, _x) - Math.PI / 2.0);
+    	Robot.log(this, "angle: " + theta);
     	dist = Math.hypot(_x, _y);
+    	Robot.log(this, "distance: " + dist);
     	Robot.imu.reset();
     	Robot.drivetrain.setTargetHeading(theta);
     	Robot.drivetrain.resetEncoders();
-    	Robot.log(this, theta);
+    	Robot.drivetrain.follow();
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	Robot.log(this, "Stage is: " + stage);
     	if (stage == 0) {
     		if (!Robot.drivetrain.targetHeadingReached()) {
+    			Robot.log(this, "turning");
     			Robot.drivetrain.drive(0, 0, 0);
     		} else {
-    			endTime = Timer.getFPGATimestamp() + 2;
+    			Robot.log(this, "Turn complete");
+    			Robot.log(this, "angle is: " +Robot.imu.getHeading());
+    			endTime = Timer.getFPGATimestamp() + 1;
     			stage = 1;
     			Robot.drivetrain.setTurningPidEnabled(false);
+    			Robot.drivetrain.stop();
     		}
-    	} else if (Timer.getFPGATimestamp() >= endTime && stage != 2) {
-    		Robot.log(this, "Set");
-			Robot.log(dist * Config.ticksPerInch);
-			stage = 2;
-		// Resetting the IMU might make the Talons happy?
-		Robot.imu.reset();
-			Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
-			Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
-			Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
-			Robot.drivetrain.setBRTarget(dist * Config.ticksPerInch);
-    	} else {
-    		Robot.log(this, Robot.drivetrain.getFLSpeed() - Robot.drivetrain.getFRSpeed());
+    	} else if (Timer.getFPGATimestamp() >= endTime) {
+    		if (stage == 1) {
+    			// Resetting the IMU might make the Talons happy?
+    			Robot.imu.reset();
+				Robot.log(this, "Resetting IMU");
+				stage = 2;
+				endTime++;
+    		} else if (stage == 2) {
+    			Robot.log(this, "Driving forwards");
+				Robot.log(dist * Config.ticksPerInch);
+				stage = 3;
+				Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
+				Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
+				Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);
+				Robot.drivetrain.setBRTarget(dist * Config.ticksPerInch);
+    		}
+    	} else if (stage == 3) {
+    		Robot.log(this,"Speed (L, R): "  +(Robot.drivetrain.getFLSpeed() - Robot.drivetrain.getFRSpeed()));
     		//Robot.drivetrain.drive(0, 0, 0);
+    		if (Robot.drivetrain.flTargetReached() &&
+        		Robot.drivetrain.frTargetReached() &&
+        		Robot.drivetrain.blTargetReached() &&
+        		Robot.drivetrain.brTargetReached()) {
+    			finished = true;
+    		}
     	}
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        if (stage == 1 &&
-        		Robot.drivetrain.flTargetReached() &&
-        		Robot.drivetrain.frTargetReached() &&
-        		Robot.drivetrain.blTargetReached() &&
-        		Robot.drivetrain.brTargetReached()) {
+        if (stage == 3 && finished) {
         	Robot.log(this, "Finished");
         	return true;
         }
@@ -75,6 +91,7 @@ public class DriveToPoint extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	Robot.drivetrain.follow();
     	Robot.drivetrain.stop();
     }
 

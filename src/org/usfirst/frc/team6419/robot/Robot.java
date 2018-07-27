@@ -123,7 +123,8 @@ public class Robot extends TimedRobot {
 	public void disabledInit() {
 
 		drivetrain.configurePID();
-
+		testStage = 0;
+		
 	}
 
 
@@ -160,10 +161,12 @@ public class Robot extends TimedRobot {
 	@Override
 
 	public void autonomousInit() {
+		
 	//	m_autonomousCommand = m_chooser.getSelected();
 
-		m_autonomousCommand = new DriveToPoint(10, 0);
-
+		
+		m_autonomousCommand = new DriveToPoint(0, 10);
+		Robot.log( "Auto command " + m_autonomousCommand);
 		/*
 
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -241,7 +244,15 @@ public class Robot extends TimedRobot {
 	}
 
 
-
+	private int testStage = 0;
+	private double testTime, origEnc;
+	private boolean testStageRunning;
+	
+	@Override
+	public void testInit() {
+		testTime = Timer.getFPGATimestamp();
+	}
+	
 	/**
 
 	 * This function is called periodically during test mode.
@@ -251,7 +262,112 @@ public class Robot extends TimedRobot {
 	@Override
 
 	public void testPeriodic() {
-
+		/*if (testStage == 0) {
+			if (testStageRunning) {
+				if (Timer.getFPGATimestamp() >= testTime) {
+					if (origEnc < drivetrain.flEncoder()) {
+						Robot.log("Test: FL: OK");
+					} else {
+						Robot.log("Test: FL: FAIL");
+					}
+					drivetrain.setFLPower(0);
+					testStage++;
+					testStageRunning = false;
+					testTime = 0;
+				}
+			} else {
+				log("Test: Stage " + testStage);
+				origEnc = drivetrain.flEncoder();
+				testTime = Timer.getFPGATimestamp() + 2;
+				testStageRunning = true;
+				drivetrain.setFLPower(1);
+			}
+		} else if (testStage == 1) {
+			if (testStageRunning) {
+				if (Timer.getFPGATimestamp() >= testTime) {
+					if (origEnc < drivetrain.frEncoder()) {
+						Robot.log("Test: FR: OK");
+					} else {
+						Robot.log("Test: FR: FAIL");
+					}
+					drivetrain.setFRPower(0);
+					testStage++;
+					testStageRunning = false;
+					testTime = 0;
+				}
+			} else {
+				log("Test: Stage " + testStage);
+				origEnc = drivetrain.frEncoder();
+				testTime = Timer.getFPGATimestamp() + 2;
+				testStageRunning = true;
+				drivetrain.setFRPower(1);
+			}
+		} else if (testStage == 2) {
+			if (testStageRunning) {
+				if (Timer.getFPGATimestamp() >= testTime) {
+					if (origEnc < drivetrain.blEncoder()) {
+						Robot.log("Test: BL: OK");
+					} else {
+						Robot.log("Test: BL: FAIL");
+					}
+					drivetrain.setBLPower(0);
+					testStage++;
+					testStageRunning = false;
+					testTime = 0;
+				}
+			} else {
+				log("Test: Stage " + testStage);
+				origEnc = drivetrain.blEncoder();
+				testTime = Timer.getFPGATimestamp() + 2;
+				testStageRunning = true;
+				drivetrain.setBLPower(1);
+			}
+		} else if (testStage == 3) {
+			if (testStageRunning) {
+				if (Timer.getFPGATimestamp() >= testTime) {
+					if (origEnc < drivetrain.brEncoder()) {
+						Robot.log("Test: BR: OK");
+					} else {
+						Robot.log("Test: BR: FAIL");
+					}
+					drivetrain.setBRPower(0);
+					testStage++;
+					testStageRunning = false;
+					testTime = 0;
+				}
+			} else {
+				log("Test: Stage " + testStage);
+				origEnc = drivetrain.brEncoder();
+				testTime = Timer.getFPGATimestamp() + 2;
+				testStageRunning = true;
+				drivetrain.setBRPower(1);
+			}
+		} else if (testStage == 4) {
+			if (!testStageRunning) {
+				log("Test: Stage " + testStage);
+				testStageRunning = true;
+				log("Test: Complete");
+			}
+		}*/
+		
+		
+		
+		
+		
+		
+				if (Timer.getFPGATimestamp() >= testTime + 8) {
+			drivetrain.setBRPower(0);
+		} else if (Timer.getFPGATimestamp() >= testTime + 6) {
+			drivetrain.setBLPower(0);
+			drivetrain.setBRPower(1);
+		} else if (Timer.getFPGATimestamp() >= testTime + 4) {
+			drivetrain.setFRPower(0);
+			drivetrain.setBLPower(1);
+		} else if (Timer.getFPGATimestamp() >= testTime + 2) {
+			drivetrain.setFLPower(0);
+			drivetrain.setFRPower(1);
+		} else {
+			drivetrain.setFLPower(1);
+		}
 	}
-
 }
