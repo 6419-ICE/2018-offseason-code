@@ -32,12 +32,13 @@ public class MecanumDrivetrain extends PIDSubsystem {
 	private boolean lastTurn, turningPidActive;
 	private boolean follow = false;
 	public boolean fieldRelative;
+	private double pidOutput = 0;
 
     // Put methods for controlling this subsystem
     // here. Call these from Commands.
 	
 	public MecanumDrivetrain() {
-		super(0, 0, 0, 5, 0);
+		super(0, 0, 0, 0.05, 0);
 		frontLeft = new WPI_TalonSRX(RobotMap.FRONT_LEFT);
 		frontRight = new WPI_TalonSRX(RobotMap.FRONT_RIGHT);
 		backLeft = new WPI_TalonSRX(RobotMap.BACK_LEFT);
@@ -164,29 +165,28 @@ public class MecanumDrivetrain extends PIDSubsystem {
      */
     public void configurePID() {
 		System.out.println("Synchronizing PID tunings");
-		
 		if (!Preferences.getInstance().containsKey("turningPid-P")) {
-			Preferences.getInstance().putDouble("turningPid-P", 0.1);
+			Preferences.getInstance().putDouble("turningPid-P", 1);
 		}
-		getPIDController().setP(Preferences.getInstance().getDouble("turningPid-P", 0.1));
+		getPIDController().setP(Preferences.getInstance().getDouble("turningPid-P", 1));
 		
 		if (!Preferences.getInstance().containsKey("turningPid-I")) {
-			Preferences.getInstance().putDouble("turningPid-I", 0.1);
+			Preferences.getInstance().putDouble("turningPid-I", 0);
 		}
-		getPIDController().setI(Preferences.getInstance().getDouble("turningPid-I", 0.1));
+		getPIDController().setI(Preferences.getInstance().getDouble("turningPid-I", 0));
 		
 		if (!Preferences.getInstance().containsKey("turningPid-D")) {
-			Preferences.getInstance().putDouble("turningPid-D", 0.1);
+			Preferences.getInstance().putDouble("turningPid-D", 1);
 		}
-		getPIDController().setD(Preferences.getInstance().getDouble("turningPid-D", 0.1));
+		getPIDController().setD(Preferences.getInstance().getDouble("turningPid-D", 1));
 		
 		if (!Preferences.getInstance().containsKey("turningPid-F")) {
-			Preferences.getInstance().putDouble("turningPid-F", 0.1);
+			Preferences.getInstance().putDouble("turningPid-F", 0);
 		}
 		getPIDController().setF(Preferences.getInstance().getDouble("turningPid-F", 0));
 		
 		getPIDController().setOutputRange(-1, 1);
-		getPIDController().setAbsoluteTolerance(0.05 * Math.PI);
+		getPIDController().setAbsoluteTolerance(0.025 * Math.PI);
     }
     
     /**
@@ -248,8 +248,8 @@ public class MecanumDrivetrain extends PIDSubsystem {
     	Robot.log(this, String.format("Target heading set to %f", heading));
     	turningPidActive = true;
     	getPIDController().reset();
-    	getPIDController().enable();
     	getPIDController().setSetpoint(heading);
+    	getPIDController().enable();
     }
     
     public boolean targetHeadingReached() {
@@ -284,7 +284,8 @@ public class MecanumDrivetrain extends PIDSubsystem {
     		lastTurn = true;
     	}
     	if (turningPidActive) {
-    			_rot = getPIDController().get();
+    		_rot = pidOutput;
+//    			_rot = getPIDController().get();
     	}
     	double fl = r * Math.sin(theta + Math.PI / 4.0) + _rot;
     	double fr = r * Math.cos(theta + Math.PI / 4.0) - _rot;
@@ -431,7 +432,9 @@ public class MecanumDrivetrain extends PIDSubsystem {
 
 	@Override
 	protected void usePIDOutput(double output) {
-		// TODO Auto-generated method stub
+		Robot.log(this, "PID output: " +output);
+		pidOutput = output;
+// TODO Auto-generated method stub
 		
 	}
 }

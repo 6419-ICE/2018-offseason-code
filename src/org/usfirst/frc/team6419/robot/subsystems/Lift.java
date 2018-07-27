@@ -1,9 +1,13 @@
 package org.usfirst.frc.team6419.robot.subsystems;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 
 import org.usfirst.frc.team6419.robot.commands.HandleLift;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.VictorSP;
 
 /**
@@ -36,5 +40,15 @@ public class Lift extends Subsystem {
     public void setPower(double power) {
     	liftMotorController.set(power);
     }
+    
+    public void park() {
+    	liftMotorController.set(0.19);
+    }
+    /*
+    @Override
+    public void initSendable(SendableBuilder builder) {
+    	builder.addDoubleProperty("Current", () -> liftMotorController.getOutputCurrent(), null);
+    	super.initSendable(builder);
+    }*/
 }
 

@@ -10,6 +10,7 @@ package org.usfirst.frc.team6419.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import org.usfirst.frc.team6419.robot.commands.*;
@@ -19,6 +20,19 @@ import org.usfirst.frc.team6419.robot.commands.*;
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI {
+	
+	/*
+	 * Right stick is omnidirectional movement, left stick x-axis is turning.
+	 * 
+	 * Buttons are the same for both joysticks.
+	 * Button 2: Toggle intake
+	 * Button 5: Open intake
+	 * Button 3: Close intake
+	 * Button 4: Succ (intake cube)
+	 * Button 6: Spit (outtake cube)
+	 * Hat switch up: Raise lift
+	 * Hat switch down: Lower lift
+	 */
 	
 	//// CREATING BUTTONS
 	// One type of button is a joystick button which is any button on a
@@ -49,28 +63,45 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 	
 	Joystick left, right;
-	JoystickButton straightDrive, intake, outtake, openIntake, closeIntake;
+	JoystickButton straightDrive, straightDriveAlt, intake, outtake, openIntake, closeIntake, intakeAlt, outtakeAlt, openIntakeAlt, closeIntakeAlt, toggleIntake, toggleIntakeAlt;
+	Command intakeCmd, outtakeCmd;
 	
 	public OI() {
 		left = new Joystick(0);
 		right = new Joystick(1);
 		straightDrive = new JoystickButton(right, 1);
+		straightDriveAlt = new JoystickButton(left, 1);
 		straightDrive.whileHeld(new StraightDrive());
+		straightDriveAlt.whileHeld(new StraightDrive());
 		SmartDashboard.putData("Reset Gyro", new ResetGyro());
 		SmartDashboard.putData("Sync PIDs", new SyncPIDTunings());
 		SmartDashboard.putData("Calibrate IMU", new CalibrateIMU());
 		SmartDashboard.putData("Test Encoders", new TestEncoders());
 		
-		intake = new JoystickButton(right, 3);
-		outtake = new JoystickButton(right, 5);
-		openIntake = new JoystickButton(left, 6);
-		closeIntake = new JoystickButton(left, 4);
+		intake = new JoystickButton(right, 4);
+		intakeAlt = new JoystickButton(left, 4);
+		outtake = new JoystickButton(right, 6);
+		outtakeAlt = new JoystickButton(left, 6);
+		openIntake = new JoystickButton(right, 5);
+		openIntakeAlt = new JoystickButton(left, 5);
+		closeIntake = new JoystickButton(right, 3);
+		closeIntakeAlt = new JoystickButton(left, 3);
+		toggleIntake = new JoystickButton(right, 2);
+		toggleIntakeAlt = new JoystickButton(left, 2);
 		
-		intake.whileHeld(new IntakeCube());
-		outtake.whileHeld(new OuttakeCube());
+		intakeCmd = new IntakeCube();
+		outtakeCmd = new OuttakeCube();
+		
 		openIntake.whenPressed(new OpenIntake());
+		openIntakeAlt.whenPressed(new OpenIntake());
 		closeIntake.whenPressed(new CloseIntake());
-		
+		closeIntakeAlt.whenPressed(new CloseIntake());
+		toggleIntake.whenPressed(new ToggleIntake());
+		toggleIntakeAlt.whenPressed(new ToggleIntake());
+		intake.whileHeld(intakeCmd);
+		intakeAlt.whileHeld(intakeCmd);
+		outtake.whileHeld(outtakeCmd);
+		outtakeAlt.whileHeld(outtakeCmd);
 	}
 	
 	public Joystick getRightJoystick() {

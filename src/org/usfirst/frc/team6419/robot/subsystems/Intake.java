@@ -24,8 +24,10 @@ public class Intake extends Subsystem {
 		right1 = new VictorSP(r1Pin);
 		left0 = new VictorSP(l0Pin);
 		left1 = new VictorSP(l1Pin);
-		left0.setInverted(true);
-		left1.setInverted(true);
+		left0.setInverted(false);
+		left1.setInverted(false);
+		right0.setInverted(true);
+		right1.setInverted(true);
 	}
 
     // Put methods for controlling this subsystem
@@ -46,9 +48,17 @@ public class Intake extends Subsystem {
     
     public void setClosed(boolean closed) {
     	if (closed) {
-    		intakeSolenoid.set(DoubleSolenoid.Value.kForward);
-    	} else {
     		intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
+    	} else {
+    		intakeSolenoid.set(DoubleSolenoid.Value.kForward);
+    	}
+    }
+    
+    public void toggle() {
+    	if (intakeSolenoid.get().equals(DoubleSolenoid.Value.kForward)) {
+    		intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
+    	} else {
+    		intakeSolenoid.set(DoubleSolenoid.Value.kForward);
     	}
     }
     

@@ -33,7 +33,18 @@ public class HandleLift extends Command {
     			Robot.lift.setPower(-0.5);
     		}
     	} else {
-    		Robot.lift.setPower(0);
+    		pov = Robot.m_oi.getRightJoystick().getPOV(0);
+    		if (pov != -1) {
+        		if (pov > 270 || pov < 90) {
+        			// up
+        			Robot.lift.setPower(1);
+        		} else if (pov > 90 && pov < 270) {
+        			// down
+        			Robot.lift.setPower(-0.5);
+        		}
+    		} else {
+    			Robot.lift.park();
+    		}
     	}
     }
 

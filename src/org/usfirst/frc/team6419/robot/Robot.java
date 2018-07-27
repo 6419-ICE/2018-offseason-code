@@ -30,9 +30,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
-
+import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto2ElectricBogaloo;
 import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
 import org.usfirst.frc.team6419.robot.commands.core.TimedDriveStraight;
+import org.usfirst.frc.team6419.robot.commands.core.TurnToHeading;
 import org.usfirst.frc.team6419.robot.subsystems.IMU;
 import org.usfirst.frc.team6419.robot.subsystems.Intake;
 import org.usfirst.frc.team6419.robot.subsystems.Lift;
@@ -62,6 +63,9 @@ public class Robot extends TimedRobot {
 
 	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1);
 	public static OI m_oi;
+	public static String gameMessage;
+	
+	//private java.util.Timer pidSyncLoop = new java.util.Timer();
 
 	Command m_autonomousCommand;
 
@@ -102,8 +106,10 @@ public class Robot extends TimedRobot {
 		m_oi = new OI();
 
 		// chooser.addObject("My Auto", new MyAutoCommand());
-
+		m_chooser.addDefault("Auto run", new TimedDriveStraight(5));
+		m_chooser.addObject("Switch", new SwitchAuto2ElectricBogaloo());
 		SmartDashboard.putData("Auto mode", m_chooser);
+		
 
 	}
 
@@ -121,8 +127,7 @@ public class Robot extends TimedRobot {
 	@Override
 
 	public void disabledInit() {
-
-		drivetrain.configurePID();
+		drivetrain.disable();
 		testStage = 0;
 		
 	}
@@ -131,6 +136,7 @@ public class Robot extends TimedRobot {
 	@Override
 
 	public void disabledPeriodic() {
+		drivetrain.configurePID();
 
 		Scheduler.getInstance().run();
 
@@ -164,8 +170,8 @@ public class Robot extends TimedRobot {
 		
 	//	m_autonomousCommand = m_chooser.getSelected();
 
-		
-		m_autonomousCommand = new TimedDriveStraight(4);
+		imu.reset();
+		m_autonomousCommand = new SwitchAuto2ElectricBogaloo();
 		Robot.log( "Auto command " + m_autonomousCommand.getName());
 		/*
 
@@ -225,6 +231,7 @@ public class Robot extends TimedRobot {
 
 		}
 		imu.reset();
+		drivetrain.setTargetHeading(0);
 
 	}
 
