@@ -62,9 +62,14 @@ public class OI {
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
 	
-	Joystick left, right;
-	JoystickButton straightDrive, straightDriveAlt, intake, outtake, openIntake, closeIntake, intakeAlt, outtakeAlt, openIntakeAlt, closeIntakeAlt, toggleIntake, toggleIntakeAlt;
-	Command intakeCmd, outtakeCmd;
+	private Joystick left, right;
+	private JoystickButton straightDrive, straightDriveAlt,
+					intake, intakeAlt,
+					outtake, outtakeAlt,
+					openIntake, openIntakeAlt,
+					closeIntake, closeIntakeAlt,
+					toggleIntake, toggleIntakeAlt;
+	private Command intakeCmd, outtakeCmd;
 	
 	public OI() {
 		left = new Joystick(0);
@@ -104,18 +109,34 @@ public class OI {
 		outtakeAlt.whileHeld(outtakeCmd);
 	}
 	
+	/**
+	 * Get right joystick object
+	 * @return right joystick
+	 */
 	public Joystick getRightJoystick() {
 		return right;
 	}
 	
+	/**
+	 * Get the value of the right joystick x axis
+	 * @return value
+	 */
 	public double getRightX() {
 		return right.getRawAxis(0);
 	}
 	
+	/**
+	 * Get the value of the right joystick y axis
+	 * @return value
+	 */
 	public double getRightY() {
 		return right.getRawAxis(1);
 	}
 	
+	/**
+	 * Get the value of the right joystick z axis
+	 * @return value
+	 */
 	public double getRightZ() {
 		if (right.getAxisCount() >= 3) {
 			return right.getRawAxis(2);
@@ -124,18 +145,34 @@ public class OI {
 		return 0;
 	}
 	
+	/**
+	 * Get the left joystick object
+	 * @return left joystick
+	 */
 	public Joystick getLeftJoystick() {
 		return left;
 	}
 	
+	/**
+	 * Get the value of the left joystick x axis
+	 * @return value
+	 */
 	public double getLeftX() {
 		return left.getRawAxis(0);
 	}
 	
+	/**
+	 * Get the value of the left joystick y axis
+	 * @return value
+	 */
 	public double getLeftY() {
 		return left.getRawAxis(1);
 	}
 	
+	/**
+	 * Get the value of the left joystick z axis
+	 * @return value
+	 */
 	public double getLeftZ() {
 		if (left.getAxisCount() >= 3) {
 			return left.getRawAxis(2);

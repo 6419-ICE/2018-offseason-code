@@ -16,6 +16,7 @@ package org.usfirst.frc.team6419.robot;
 
 
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,7 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-
+import java.util.TimerTask;
 
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto2ElectricBogaloo;
@@ -62,28 +63,54 @@ public class Robot extends TimedRobot {
 	public static Lift lift = new Lift(Config.liftMotorPin);
 
 	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1);
-	public static OI m_oi;
-	public static String gameMessage;
 	
-	//private java.util.Timer pidSyncLoop = new java.util.Timer();
+	public static OI m_oi;
+	
+	private java.util.Timer pidSyncLoop = new java.util.Timer();
 
-	Command m_autonomousCommand;
+	private class PidSyncTask extends TimerTask {
+		
+		@Override
+		public void run() {
+			if (DriverStation.getInstance().isDisabled()) {
+				Robot.drivetrain.configurePID();
+			}
+		}
+	}
 
-	SendableChooser<Command> m_chooser = new SendableChooser<>();
+	private Command m_autonomousCommand;
+	private SendableChooser<Command> m_chooser = new SendableChooser<>();
+	
+	private int testStage = 0;
+	private double testTime, origEnc;
+	private boolean testStageRunning;
 
-
+	/**
+	 * Print a formatted log entry with a timestamp.
+	 * @param fmt format string
+	 * @param args format values
+	 */
 	public static void log(String fmt, Object... args) {
 		System.out.print("[");
 		System.out.print(Timer.getFPGATimestamp());
 		System.out.println("] " + String.format(fmt, args));
 	}
 	
+	/**
+	 * Print a log entry with a timestamp and a source tag.
+	 * @param src source from which this entry is being logged
+	 * @param msg message to log
+	 */
 	public static void log(Sendable src, Object msg) {
 		System.out.print("[");
 		System.out.print(Timer.getFPGATimestamp());
 		System.out.println("] " + src.getName() + ": " + String.valueOf(msg));
 	}
 	
+	/**
+	 * Print a log entry with a timestamp.
+	 * @param msg message to log
+	 */
 	public static void log(Object msg) {
 		System.out.print("[");
 		System.out.print(Timer.getFPGATimestamp());
@@ -91,169 +118,95 @@ public class Robot extends TimedRobot {
 	}
 	
 	/**
-	 
 	* This function is run when the robot is first started up and should be
-
 	 * used for any initialization code.
-
 	 */
 
-
 	@Override
-
 	public void robotInit() {
-
 		m_oi = new OI();
-
-		// chooser.addObject("My Auto", new MyAutoCommand());
+		
 		m_chooser.addDefault("Auto run", new TimedDriveStraight(5));
 		m_chooser.addObject("Switch", new SwitchAuto2ElectricBogaloo());
 		SmartDashboard.putData("Auto mode", m_chooser);
 		
-
+		// Setup PidSyncTask::run to be executed every 2 seconds.
+		pidSyncLoop = new java.util.Timer();
+		pidSyncLoop.schedule(new PidSyncTask(), 0L, 2);
 	}
 
-
 	/**
-
 	 * This function is called once each time the robot enters Disabled mode.
-
 	 * You can use it to reset any subsystem information you want to clear when
-
 	 * the robot is disabled.
-
 	 */
 
 	@Override
-
 	public void disabledInit() {
 		drivetrain.disable();
 		testStage = 0;
-		
 	}
 
-
 	@Override
-
 	public void disabledPeriodic() {
 		drivetrain.configurePID();
-
 		Scheduler.getInstance().run();
-
 	}
 
-
-
 	/**
-
 	 * This autonomous (along with the chooser code above) shows how to select
-
 	 * between different autonomous modes using the dashboard. The sendable
 	 * chooser code works with the Java SmartDashboard. If you prefer the
-
 	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
 	 * getString code to get the auto name from the text box below the Gyro
-
 	 *
-
 	 * <p>You can add additional auto modes by adding additional commands to the
-
 	 * chooser code above (like the commented example) or additional comparisons
-
 	 * to the switch structure below with additional strings & commands.
-
 	 */
 
 	@Override
-
 	public void autonomousInit() {
-		
-	//	m_autonomousCommand = m_chooser.getSelected();
-
 		imu.reset();
-		m_autonomousCommand = new SwitchAuto2ElectricBogaloo();
-		Robot.log( "Auto command " + m_autonomousCommand.getName());
-		/*
-
-		 * String autoSelected = SmartDashboard.getString("Auto Selector",
-
-		 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-
-		 * = new MyAutoCommand(); break; case "Default Auto": default:
-
-		 * autonomousCommand = new ExampleCommand(); break;}
- 		 */
-
-
-		// schedule the autonomous command (example)
-
+		m_autonomousCommand = m_chooser.getSelected();
+		Robot.log("Selected auto: " + m_autonomousCommand.getName());
+		
 		if (m_autonomousCommand != null) {
-
 			m_autonomousCommand.start();
-
 		}
-
 	}
-
 
 	/**
-
 	 * This function is called periodically during autonomous.
-
 	 */
 
 	@Override
-
 	public void autonomousPeriodic() {
-
 		Scheduler.getInstance().run();
-
 	}
 
-
-
 	@Override
-
 	public void teleopInit() {
-
 		// This makes sure that the autonomous stops running when
-
 		// teleop starts running. If you want the autonomous to
-
 		// continue until interrupted by another command, remove
-
 		// this line or comment it out.
-	
-	
 		if (m_autonomousCommand != null) {
-
 			m_autonomousCommand.cancel();
-
 		}
+		
 		imu.reset();
 		drivetrain.setTargetHeading(0);
-
 	}
 
-
 	/**
-
 	 * This function is called periodically during operator control.
-
 	 */
 
 	@Override
-
 	public void teleopPeriodic() {
-
 		Scheduler.getInstance().run();
-
 	}
-
-
-	private int testStage = 0;
-	private double testTime, origEnc;
-	private boolean testStageRunning;
 	
 	@Override
 	public void testInit() {
@@ -261,13 +214,10 @@ public class Robot extends TimedRobot {
 	}
 	
 	/**
-
 	 * This function is called periodically during test mode.
-
 	 */
-
+	
 	@Override
-
 	public void testPeriodic() {
 		/*if (testStage == 0) {
 			if (testStageRunning) {
@@ -356,13 +306,7 @@ public class Robot extends TimedRobot {
 				log("Test: Complete");
 			}
 		}*/
-		
-		
-		
-		
-		
-		
-				if (Timer.getFPGATimestamp() >= testTime + 8) {
+		if (Timer.getFPGATimestamp() >= testTime + 8) {
 			drivetrain.setBRPower(0);
 		} else if (Timer.getFPGATimestamp() >= testTime + 6) {
 			drivetrain.setBLPower(0);

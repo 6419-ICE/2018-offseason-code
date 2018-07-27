@@ -5,41 +5,37 @@ import org.usfirst.frc.team6419.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- *
+ * Sets the drivetrain's target heading
  */
 public class TurnToHeading extends Command {
 	
 	private double _heading;
-
+	
+	/**
+	 * Construct a TurnToHeading command
+	 * @param heading target heading
+	 */
     public TurnToHeading(double heading) {
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
     	requires(Robot.drivetrain);
     	_heading = heading;
     }
 
-    // Called just before this Command runs the first time
     protected void initialize() {
     	Robot.drivetrain.setTargetHeading(_heading);
     }
 
-    // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	Robot.drivetrain.drive(0, 0, 0);
     }
 
-    // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
         return Robot.drivetrain.targetHeadingReached();
     }
 
-    // Called once after isFinished returns true
     protected void end() {
     	Robot.drivetrain.stop();
     }
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
     protected void interrupted() {
     	end();
     }

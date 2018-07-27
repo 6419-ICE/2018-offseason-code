@@ -6,40 +6,40 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- *
+ * A simple command that waits for the specified time
  */
 public class Wait extends Command {
 	
 	private double _time, endTime;
 
+	/**
+	 * Construct a Wait command
+	 * @param time time, in seconds, to wait
+	 */
     public Wait(double time) {
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
+    	// Store it for later
     	_time = time;
     }
 
-    // Called just before this Command runs the first time
     protected void initialize() {
+    	// Get the timestamp now instead of in the constructor because
+    	// initialize is normally called some time later
     	endTime = Timer.getFPGATimestamp() + _time;
     	Robot.log(this, String.format("Waiting until %f (current is %f)", endTime, Timer.getFPGATimestamp()));
     }
 
-    // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	
     }
 
-    // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
         return Timer.getFPGATimestamp() >= endTime;
     }
 
-    // Called once after isFinished returns true
     protected void end() {
-    	
+    	Robot.log(this, "Wait complete");
     }
-
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
+    
     protected void interrupted() {
     }
 }

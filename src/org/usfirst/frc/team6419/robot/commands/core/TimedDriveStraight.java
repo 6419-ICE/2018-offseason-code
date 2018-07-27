@@ -7,41 +7,39 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- *
+ * Drive straight for the specified time
  */
 public class TimedDriveStraight extends Command {
-	private double time;
-	private double startTime;
+	
+	private double time, endTime;
+	
+	/**
+	 * Construct a TimedDriveStraight command
+	 * @param time time, in seconds, to drive
+	 */
     public TimedDriveStraight(double time) {
     	requires(Robot.drivetrain);
     	this.time = time;
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
     }
 
-    // Called just before this Command runs the first time
     protected void initialize() {
-    	startTime = Timer.getFPGATimestamp();
+    	endTime = Timer.getFPGATimestamp() + time;
+    	// Activate the drivetrain's turning PID to mitigate drift while driving
     	Robot.drivetrain.setTargetHeading(Robot.imu.getHeading());
     }
 
-    // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Robot.drivetrain.drive(0, -.5, 0);
+    	Robot.drivetrain.drive(0, -0.5, 0);
     }
 
-    // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Timer.getFPGATimestamp() -startTime >= time;
+        return Timer.getFPGATimestamp() >= endTime;
     }
 
-    // Called once after isFinished returns true
     protected void end() {
     	Robot.drivetrain.stop();
     }
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
     protected void interrupted() {
     	end();
     }

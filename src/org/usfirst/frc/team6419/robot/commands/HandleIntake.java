@@ -5,37 +5,33 @@ import org.usfirst.frc.team6419.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- * This class is intentionally empty(ish)
+ * Default command for the {@link Intake org.usfirst.frc.team6419.robot.subsystems.Intake}
+ * 
+ * All it does is stop the intake motors.
  */
 public class HandleIntake extends Command {
 
     public HandleIntake() {
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
     	requires(Robot.intake);
     }
 
-    // Called just before this Command runs the first time
     protected void initialize() {
     	Robot.intake.setPower(0);
     }
-
-    // Called repeatedly when this Command is scheduled to run
+    
     protected void execute() {
     	
     }
 
-    // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
         return false;
     }
 
-    // Called once after isFinished returns true
     protected void end() {
+    	
     }
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
     protected void interrupted() {
+    	
     }
 }

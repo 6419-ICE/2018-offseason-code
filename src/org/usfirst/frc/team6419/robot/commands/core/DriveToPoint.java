@@ -34,7 +34,6 @@ public class DriveToPoint extends Command {
     	Robot.imu.reset();
     	Robot.drivetrain.setTargetHeading(theta);
     	Robot.drivetrain.resetEncoders();
-    	Robot.drivetrain.follow();
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -91,7 +90,6 @@ public class DriveToPoint extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
-    	Robot.drivetrain.follow();
     	Robot.drivetrain.stop();
     }
 
