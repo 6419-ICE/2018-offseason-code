@@ -1,4 +1,4 @@
-package org.usfirst.frc.team6419.robot.commands.auto;
+package org.usfirst.frc.team6419.robot.commands.core;
 
 
 import org.usfirst.frc.team6419.robot.Robot;
@@ -22,11 +22,12 @@ public class TimedDriveStraight extends Command {
     // Called just before this Command runs the first time
     protected void initialize() {
     	startTime = Timer.getFPGATimestamp();
+    	Robot.drivetrain.setTargetHeading(Robot.imu.getHeading());
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Robot.drivetrain.drive(0, .5, 0);
+    	Robot.drivetrain.drive(0, -.5, 0);
     }
 
     // Make this return true when this Command no longer needs to run execute()

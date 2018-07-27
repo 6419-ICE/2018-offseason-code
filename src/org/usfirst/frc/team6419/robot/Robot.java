@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
 
 import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
-
+import org.usfirst.frc.team6419.robot.commands.core.TimedDriveStraight;
 import org.usfirst.frc.team6419.robot.subsystems.IMU;
 import org.usfirst.frc.team6419.robot.subsystems.Intake;
 import org.usfirst.frc.team6419.robot.subsystems.Lift;
@@ -165,8 +165,8 @@ public class Robot extends TimedRobot {
 	//	m_autonomousCommand = m_chooser.getSelected();
 
 		
-		m_autonomousCommand = new DriveToPoint(0, 10);
-		Robot.log( "Auto command " + m_autonomousCommand);
+		m_autonomousCommand = new TimedDriveStraight(4);
+		Robot.log( "Auto command " + m_autonomousCommand.getName());
 		/*
 
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
