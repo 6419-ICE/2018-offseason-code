@@ -15,6 +15,8 @@ public class DriveToPoint extends Command {
 	private int stage;
 	private double endTime;
 	private boolean finished;
+	private boolean atTarget;
+	private double timestamp;
 
     public DriveToPoint(double x, double y) {
         // Use requires() here to declare subsystem dependencies
@@ -43,13 +45,20 @@ public class DriveToPoint extends Command {
     		if (!Robot.drivetrain.targetHeadingReached()) {
     			Robot.log(this, "turning");
     			Robot.drivetrain.drive(0, 0, 0);
+    			atTarget = false;
     		} else {
-    			Robot.log(this, "Turn complete");
-    			Robot.log(this, "angle is: " +Robot.imu.getHeading());
-    			endTime = Timer.getFPGATimestamp() + 1;
-    			stage = 1;
-    			Robot.drivetrain.setTurningPidEnabled(false);
-    			Robot.drivetrain.stop();
+    			if (!atTarget) {
+    				atTarget = true;
+    				timestamp = Timer.getFPGATimestamp();
+    			}
+    			if (Timer.getFPGATimestamp() - timestamp > 1) {
+    				Robot.log(this, "Turn complete");
+    				Robot.log(this, "angle is: " +Robot.imu.getHeading());
+    				endTime = Timer.getFPGATimestamp() + 1;
+    				stage = 1;
+    				Robot.drivetrain.setTurningPidEnabled(false);
+    				Robot.drivetrain.stop();
+    			}
     		}
     	} else if (Timer.getFPGATimestamp() >= endTime) {
     		if (stage == 1) {
@@ -62,6 +71,7 @@ public class DriveToPoint extends Command {
     			Robot.log(this, "Driving forwards");
 				Robot.log(dist * Config.ticksPerInch);
 				stage = 3;
+				Robot.drivetrain.resetEncoders();
 				Robot.drivetrain.setFLTarget(dist * Config.ticksPerInch);
 				Robot.drivetrain.setFRTarget(dist * Config.ticksPerInch);
 				Robot.drivetrain.setBLTarget(dist * Config.ticksPerInch);

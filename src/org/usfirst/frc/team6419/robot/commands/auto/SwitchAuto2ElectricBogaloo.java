@@ -22,7 +22,7 @@ public class SwitchAuto2ElectricBogaloo extends CommandGroup {
     	}
     	double driveTime = Preferences.getInstance().getDouble("sw2-driveTime", 2);
        
-    	addSequential(new RaiseLiftForTime(5));
+    	addSequential(new RaiseLiftForTime(1.555555));
     	addSequential(new Wait(.5));
     	addSequential(new TimedDriveStraight(.25));
         if (DriverStation.getInstance().getGameSpecificMessage().charAt(0) == 'R') {
@@ -30,13 +30,13 @@ public class SwitchAuto2ElectricBogaloo extends CommandGroup {
         	//addParallel(new RaiseLiftForTime(1.5));
         	addSequential(new TimedDriveStraight(driveTime));
         } else {
-        	addSequential(new TurnToHeading(Math.toRadians(-37)), 3);
+        	addSequential(new TurnToHeading(Math.toRadians(-42)), 3);
         	//addParallel(new RaiseLiftForTime(1.5));
     		addSequential(new TimedDriveStraight(driveTime));
         }
         addSequential(new TurnToHeading(0), 3);
         addSequential(new TimedDriveStraight(1.5));
-        addSequential(new OpenIntake());
+        addSequential(new OuttakeCube(), 2.5);
         
     }
 }

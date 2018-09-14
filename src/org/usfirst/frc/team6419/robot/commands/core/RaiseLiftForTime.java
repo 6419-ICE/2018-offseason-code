@@ -21,7 +21,7 @@ public class RaiseLiftForTime extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	Robot.lift.setPower(0.555);
+    	Robot.lift.setPower(1);
     }
 
     // Called repeatedly when this Command is scheduled to run

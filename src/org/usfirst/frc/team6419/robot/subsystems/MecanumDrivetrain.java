@@ -14,6 +14,7 @@ import com.analog.adis16448.ADIS16448_IMU;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SensorTerm;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
@@ -53,12 +54,14 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		// Invert the right side
 		frontRight.setInverted(true);
 		backRight.setInverted(true);
-	
+		frontLeft.setInverted(false);
+		backLeft.setInverted(false);
 		// Set sensor phases to make encoder forward be motor forward
-		frontLeft.setSensorPhase(false);
+		frontLeft.setSensorPhase(true);
 		frontRight.setSensorPhase(true);
-		backLeft.setSensorPhase(false);
+		backLeft.setSensorPhase(true);
 		backRight.setSensorPhase(true);
+		
 		
 		// Enable brake mode
 		frontLeft.setNeutralMode(NeutralMode.Brake);
@@ -99,26 +102,30 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		backLeft.configAllowableClosedloopError(0, 10, 0);
 		backRight.configAllowableClosedloopError(0, 10, 0);
 		
+		double kP = 0.1;
+		double kI = 0;
+		double kD = 0.5;
+		
 		// Configure Talon PID tunings
 		frontLeft.config_kF(0, 0, 0);
-		frontLeft.config_kP(0, 0.1, 0);
-		frontLeft.config_kI(0, 0, 0);
-		frontLeft.config_kD(0, 0, 0);
+		frontLeft.config_kP(0, kP, 0);
+		frontLeft.config_kI(0, kI, 0);
+		frontLeft.config_kD(0, kD, 0);
 		
 		frontRight.config_kF(0, 0, 0);
-		frontRight.config_kP(0, 0.1, 0);
-		frontRight.config_kI(0, 0, 0);
-		frontRight.config_kD(0, 0, 0);
+		frontRight.config_kP(0, kP, 0);
+		frontRight.config_kI(0, kI, 0);
+		frontRight.config_kD(0, kD, 0);
 		
 		backLeft.config_kF(0, 0, 0);
-		backLeft.config_kP(0, 0.1, 0);
-		backLeft.config_kI(0, 0, 0);
-		backLeft.config_kD(0, 0, 0);
+		backLeft.config_kP(0, kP, 0);
+		backLeft.config_kI(0, kI, 0);
+		backLeft.config_kD(0, kD, 0);
 		
 		backRight.config_kF(0, 0, 0);
-		backRight.config_kP(0, 0.1, 0);
-		backRight.config_kI(0, 0, 0);
-		backRight.config_kD(0, 0, 0);
+		backRight.config_kP(0, kP, 0);
+		backRight.config_kI(0, kI, 0);
+		backRight.config_kD(0, kD, 0);
 		
 		// Set encoders to start at the absolute position
 		int absPos = frontLeft.getSensorCollection().getPulseWidthPosition();
@@ -135,6 +142,27 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		absPos = backRight.getSensorCollection().getPulseWidthPosition();
 		absPos &= 0xfff;
 		backRight.setSelectedSensorPosition(absPos, 0, 0);
+		
+		/*frontLeft.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, 0);
+    	frontLeft.configSensorTerm(SensorTerm.Diff0, FeedbackDevice.SoftwareEmulatedSensor, 0);
+    	frontLeft.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.SoftwareEmulatedSensor, 0);
+    	frontLeft.config_kF(1, 0, 0);
+    	frontLeft.config_kP(1, 1 * (360 / (2.0 * Math.PI)), 0);
+    	frontLeft.config_kI(1, 0, 0);
+    	frontLeft.config_kD(1, 1 * (360 / (2.0 * Math.PI)), 0);
+    	
+    	frontRight.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, 0);
+    	frontRight.configSensorTerm(SensorTerm.Diff0, FeedbackDevice.SoftwareEmulatedSensor, 0);
+    	frontRight.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.SoftwareEmulatedSensor, 0);
+    	frontRight.config_kF(1, 0, 0);
+    	frontRight.config_kP(1, 1 * (360 / (2.0 * Math.PI)), 0);
+    	frontRight.config_kI(1, 0, 0);
+    	frontRight.config_kD(1, 1 * (360 / (2.0 * Math.PI)), 0);*/
+		
+		frontLeft.configClosedloopRamp(0.75, 0);
+		frontRight.configClosedloopRamp(0.75, 0);
+		backLeft.configClosedloopRamp(0.75, 0);
+		backRight.configClosedloopRamp(0.75, 0);
 		
 		fieldRelative = false;
 		
@@ -175,6 +203,10 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		
 		getPIDController().setOutputRange(-1, 1);
 		getPIDController().setAbsoluteTolerance(0.025 * Math.PI);
+    }
+    
+    public void updateCascadingPIDs() {
+    	//frontLeft.setSelectedSensorPosition(, pidIdx, timeoutMs)
     }
     
     /**
@@ -386,7 +418,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
      */
     public void setFLTarget(double target) {
     	Robot.log(this, "Front left target: " + target);
-    	frontLeft.set(ControlMode.Position, -target);
+    	frontLeft.set(ControlMode.Position, target);
     }
     
     /**
@@ -404,7 +436,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
      */
     public void setBLTarget(double target) {
     	Robot.log(this, "Back Left Target: " + target);
-    	backLeft.set(ControlMode.Position, -target);
+    	backLeft.set(ControlMode.Position, target);
     }
     
     /**
@@ -519,10 +551,10 @@ public class MecanumDrivetrain extends PIDSubsystem {
     public void initSendable(SendableBuilder builder) {
     	Robot.log(this, "Initializing sendable");
     	builder.addBooleanProperty("PID active", () -> turningPidActive, null);
-    	builder.addDoubleArrayProperty("FL", () -> new double[] {frontLeft.get(), frontLeft.getSelectedSensorPosition(0), frontLeft.getSelectedSensorVelocity(0), (frontLeft.getControlMode().value == 1) ? frontLeft.getClosedLoopTarget(0) : 0}, null);
-    	builder.addDoubleArrayProperty("FR", () -> new double[] {frontRight.get(), frontRight.getSelectedSensorPosition(0), frontRight.getSelectedSensorVelocity(0), (frontRight.getControlMode().value == 1) ? frontRight.getClosedLoopTarget(0) : 0}, null);
-    	builder.addDoubleArrayProperty("BL", () -> new double[] {backLeft.get(), backLeft.getSelectedSensorPosition(0), backLeft.getSelectedSensorVelocity(0), (backLeft.getControlMode().value == 1) ? backLeft.getClosedLoopTarget(0) : 0}, null);
-    	builder.addDoubleArrayProperty("BR", () -> new double[] {backRight.get(), backRight.getSelectedSensorPosition(0), backRight.getSelectedSensorVelocity(0), (backRight.getControlMode().value == 1) ? backRight.getClosedLoopTarget(0) : 0}, null);
+    	builder.addDoubleArrayProperty("FL", () -> new double[] {frontLeft.get(), frontLeft.getSelectedSensorPosition(0), frontLeft.getSelectedSensorVelocity(0), (frontLeft.getControlMode().value == 1) ? frontLeft.getClosedLoopTarget(0) : 0, (frontLeft.getControlMode().value == 1) ? frontLeft.getClosedLoopError(0) : 0}, null);
+    	builder.addDoubleArrayProperty("FR", () -> new double[] {frontRight.get(), frontRight.getSelectedSensorPosition(0), frontRight.getSelectedSensorVelocity(0), (frontRight.getControlMode().value == 1) ? frontRight.getClosedLoopTarget(0) : 0, (frontRight.getControlMode().value == 1) ? frontRight.getClosedLoopError(0) : 0}, null);
+    	builder.addDoubleArrayProperty("BL", () -> new double[] {backLeft.get(), backLeft.getSelectedSensorPosition(0), backLeft.getSelectedSensorVelocity(0), (backLeft.getControlMode().value == 1) ? backLeft.getClosedLoopTarget(0) : 0, (backLeft.getControlMode().value == 1) ? backLeft.getClosedLoopError(0) : 0}, null);
+    	builder.addDoubleArrayProperty("BR", () -> new double[] {backRight.get(), backRight.getSelectedSensorPosition(0), backRight.getSelectedSensorVelocity(0), (backRight.getControlMode().value == 1) ? backRight.getClosedLoopTarget(0) : 0, (backRight.getControlMode().value == 1) ? backRight.getClosedLoopError(0) : 0}, null);
     	Robot.log(this, "Properties added");
     	super.initSendable(builder);
     }

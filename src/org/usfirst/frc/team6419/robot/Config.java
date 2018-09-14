@@ -34,6 +34,8 @@ public class Config {
 	// The PCM pins connected to the intake solenoid
 	public static final int intakeSolenoidPin0 = 0, intakeSolenoidPin1 = 3;
 	
-	// PWM pins connected to the intake wheel controllers
+	// PWM pins connected to the intake whe	el controllers
 	public static final int intakeR0 = 1, intakeR1 = 2, intakeL0 = 3, intakeL1 = 4;
+	
+	public static final int intakeUltrasonicInput = 5, intakeUltrasonicOutput = 6;
 }

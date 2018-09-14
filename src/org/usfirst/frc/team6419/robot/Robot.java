@@ -17,6 +17,7 @@ package org.usfirst.frc.team6419.robot;
 
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -32,6 +33,8 @@ import java.util.TimerTask;
 
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto2ElectricBogaloo;
+import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto2WithDrive2Point;
+import org.usfirst.frc.team6419.robot.commands.auto.SwitchAutoPosition3;
 import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
 import org.usfirst.frc.team6419.robot.commands.core.TimedDriveStraight;
 import org.usfirst.frc.team6419.robot.commands.core.TurnToHeading;
@@ -62,7 +65,7 @@ public class Robot extends TimedRobot {
 
 	public static Lift lift = new Lift(Config.liftMotorPin);
 
-	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1);
+	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1, Config.intakeUltrasonicInput, Config.intakeUltrasonicOutput);
 	
 	public static OI m_oi;
 	
@@ -77,9 +80,25 @@ public class Robot extends TimedRobot {
 			}
 		}
 	}
+	
+	public enum Auto {
+		LEFT('L'),
+		CENTER('C'),
+		RIGHT('R');
+		
+		private char value;
+		
+		private Auto(char v) {
+			value = v;
+		}
+		
+		public char toChar() {
+			return value;
+		}
+	}
 
 	private Command m_autonomousCommand;
-	private SendableChooser<Command> m_chooser = new SendableChooser<>();
+	private SendableChooser<Auto> m_chooser = new SendableChooser<>();
 	
 	private int testStage = 0;
 	private double testTime, origEnc;
@@ -121,18 +140,26 @@ public class Robot extends TimedRobot {
 	* This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
+	
+	private PidSyncTask syncTask;
 
 	@Override
 	public void robotInit() {
 		m_oi = new OI();
 		
-		m_chooser.addDefault("Auto run", new TimedDriveStraight(5));
-		m_chooser.addObject("Switch", new SwitchAuto2ElectricBogaloo());
+		m_chooser.addDefault("Center", Auto.CENTER);
+		m_chooser.addObject("Left", Auto.LEFT);
+		m_chooser.addObject("Right", Auto.RIGHT);
 		SmartDashboard.putData("Auto mode", m_chooser);
+		if (!Preferences.getInstance().containsKey("HMD-speed")) {
+			Preferences.getInstance().putDouble("HMD-speed", 1);
+		}
+		
+		syncTask = new PidSyncTask();
 		
 		// Setup PidSyncTask::run to be executed every 2 seconds.
 		pidSyncLoop = new java.util.Timer();
-		pidSyncLoop.schedule(new PidSyncTask(), 0L, 2);
+		pidSyncLoop.scheduleAtFixedRate(syncTask, 2000, 2000);
 	}
 
 	/**
@@ -149,7 +176,6 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void disabledPeriodic() {
-		drivetrain.configurePID();
 		Scheduler.getInstance().run();
 	}
 
@@ -168,7 +194,14 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		imu.reset();
-		m_autonomousCommand = m_chooser.getSelected();
+		Auto selected = m_chooser.getSelected();
+		if (selected == Auto.LEFT || selected == Auto.RIGHT) {
+			m_autonomousCommand = new SwitchAutoPosition3(selected);
+		//} else if(selected == "C"){
+		//	m_autonomousCommand = new SwitchAuto2ElectricBogaloo();
+		} else if (selected == Auto.CENTER) {
+			m_autonomousCommand = new SwitchAuto2WithDrive2Point();
+		}
 		Robot.log("Selected auto: " + m_autonomousCommand.getName());
 		
 		if (m_autonomousCommand != null) {
@@ -183,7 +216,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
-	}
+	}	
 
 	@Override
 	public void teleopInit() {

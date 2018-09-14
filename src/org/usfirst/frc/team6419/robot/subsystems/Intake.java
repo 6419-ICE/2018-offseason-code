@@ -3,6 +3,7 @@ package org.usfirst.frc.team6419.robot.subsystems;
 import org.usfirst.frc.team6419.robot.commands.HandleIntake;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
@@ -13,6 +14,7 @@ public class Intake extends Subsystem {
 	
 	private DoubleSolenoid intakeSolenoid;
 	private VictorSP right0, right1, left0, left1;
+	private Ultrasonic ultrasonic;
 	
 	/**
 	 * Construct a new Intake
@@ -23,7 +25,7 @@ public class Intake extends Subsystem {
 	 * @param l0Pin
 	 * @param l1Pin
 	 */
-	public Intake(int solenoidPin0, int solenoidPin1, int r0Pin, int r1Pin, int l0Pin, int l1Pin) {
+	public Intake(int solenoidPin0, int solenoidPin1, int r0Pin, int r1Pin, int l0Pin, int l1Pin, int ultrasonicInput, int ultrasonicOutput) {
 		// Instantiate and initialize the intake solenoid
 		intakeSolenoid = new DoubleSolenoid(solenoidPin0, solenoidPin1);
 		intakeSolenoid.set(DoubleSolenoid.Value.kOff);
@@ -39,6 +41,8 @@ public class Intake extends Subsystem {
 		left1.setInverted(false);
 		right0.setInverted(true);
 		right1.setInverted(true);
+		
+		ultrasonic = new Ultrasonic(ultrasonicInput, ultrasonicOutput, Ultrasonic.Unit.kInches);
 	}
 
     public void initDefaultCommand() {
@@ -79,11 +83,19 @@ public class Intake extends Subsystem {
     	}
     }
     
+    public boolean isClosed() {
+    	return intakeSolenoid.get() == DoubleSolenoid.Value.kReverse;
+    }
+    
     /**
      * Depressurize the cylinders
      */
     public void depressurize() {
     	intakeSolenoid.set(DoubleSolenoid.Value.kOff);
+    }
+    
+    public double getCubeDistance() {
+    	return ultrasonic.getRangeInches();
     }
 }
 

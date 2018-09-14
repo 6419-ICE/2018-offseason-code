@@ -94,19 +94,16 @@ public class OI {
 		toggleIntake = new JoystickButton(right, 2);
 		toggleIntakeAlt = new JoystickButton(left, 2);
 		
-		intakeCmd = new IntakeCube();
-		outtakeCmd = new OuttakeCube();
-		
 		openIntake.whenPressed(new OpenIntake());
 		openIntakeAlt.whenPressed(new OpenIntake());
 		closeIntake.whenPressed(new CloseIntake());
 		closeIntakeAlt.whenPressed(new CloseIntake());
 		toggleIntake.whenPressed(new ToggleIntake());
 		toggleIntakeAlt.whenPressed(new ToggleIntake());
-		intake.whileHeld(intakeCmd);
-		intakeAlt.whileHeld(intakeCmd);
-		outtake.whileHeld(outtakeCmd);
-		outtakeAlt.whileHeld(outtakeCmd);
+		intake.whenPressed(new IntakeCube());
+		intakeAlt.whenPressed(new IntakeCube());
+		outtake.whileHeld(new OuttakeCube());
+		outtakeAlt.whileHeld(new OuttakeCube());
 	}
 	
 	/**

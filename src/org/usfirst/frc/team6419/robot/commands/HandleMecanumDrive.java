@@ -2,6 +2,7 @@ package org.usfirst.frc.team6419.robot.commands;
 
 import org.usfirst.frc.team6419.robot.Robot;
 
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -24,7 +25,8 @@ public class HandleMecanumDrive extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	Robot.drivetrain.fieldRelative = SmartDashboard.getBoolean("Field Relative", false);
-    	Robot.drivetrain.drive(Robot.m_oi.getRightX(), Robot.m_oi.getRightY(), Robot.m_oi.getLeftX());
+    	double speed = Preferences.getInstance().getDouble("HMD-speed", 1);
+    	Robot.drivetrain.drive(speed * Robot.m_oi.getRightX(), speed * Robot.m_oi.getRightY(), speed * Robot.m_oi.getLeftX());
     }
 
     // Make this return true when this Command no longer needs to run execute()
