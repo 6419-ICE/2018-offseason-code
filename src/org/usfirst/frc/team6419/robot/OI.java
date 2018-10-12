@@ -62,18 +62,19 @@ public class OI {
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
 	
-	private Joystick left, right;
+	private Joystick left, right, mechanism;
 	private JoystickButton straightDrive, straightDriveAlt,
-					intake, intakeAlt,
-					outtake, outtakeAlt,
-					openIntake, openIntakeAlt,
-					closeIntake, closeIntakeAlt,
-					toggleIntake, toggleIntakeAlt;
+					intake, intakeAlt, intakeMechanism,
+					outtake, outtakeAlt, outtakeMechanism,
+					openIntake, openIntakeAlt, openIntakeMechanism,
+					closeIntake, closeIntakeAlt, closeIntakeMechanism,
+					toggleIntake, toggleIntakeAlt, toggleIntakeMechanism;
 	private Command intakeCmd, outtakeCmd;
 	
 	public OI() {
 		left = new Joystick(0);
 		right = new Joystick(1);
+		mechanism = new Joystick(2);
 		straightDrive = new JoystickButton(right, 1);
 		straightDriveAlt = new JoystickButton(left, 1);
 		straightDrive.whileHeld(new StraightDrive());
@@ -85,25 +86,36 @@ public class OI {
 		
 		intake = new JoystickButton(right, 4);
 		intakeAlt = new JoystickButton(left, 4);
+		// todo find the right buttons
+		intakeMechanism = new JoystickButton(mechanism, 4);
 		outtake = new JoystickButton(right, 6);
 		outtakeAlt = new JoystickButton(left, 6);
+		outtakeMechanism = new JoystickButton(mechanism, 6);
 		openIntake = new JoystickButton(right, 5);
 		openIntakeAlt = new JoystickButton(left, 5);
+		openIntakeMechanism = new JoystickButton(mechanism, 5);
 		closeIntake = new JoystickButton(right, 3);
 		closeIntakeAlt = new JoystickButton(left, 3);
+		closeIntakeMechanism = new JoystickButton(mechanism, 3);
 		toggleIntake = new JoystickButton(right, 2);
 		toggleIntakeAlt = new JoystickButton(left, 2);
+		toggleIntakeMechanism = new JoystickButton(mechanism, 2);
 		
 		openIntake.whenPressed(new OpenIntake());
 		openIntakeAlt.whenPressed(new OpenIntake());
+		openIntakeMechanism.whenPressed(new OpenIntake());
 		closeIntake.whenPressed(new CloseIntake());
 		closeIntakeAlt.whenPressed(new CloseIntake());
+		closeIntakeMechanism.whenPressed(new CloseIntake());
 		toggleIntake.whenPressed(new ToggleIntake());
 		toggleIntakeAlt.whenPressed(new ToggleIntake());
-		intake.whenPressed(new IntakeCube());
-		intakeAlt.whenPressed(new IntakeCube());
+		toggleIntakeMechanism.whenPressed(new ToggleIntake());
+		intake.whileHeld(new IntakeCubeWithoutUltrasonic());
+		intakeAlt.whileHeld(new IntakeCubeWithoutUltrasonic());
+		intakeMechanism.whileHeld(new IntakeCubeWithoutUltrasonic());
 		outtake.whileHeld(new OuttakeCube());
 		outtakeAlt.whileHeld(new OuttakeCube());
+		outtakeMechanism.whileHeld(new OuttakeCube());
 	}
 	
 	/**

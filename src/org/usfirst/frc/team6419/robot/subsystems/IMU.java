@@ -14,9 +14,11 @@ public class IMU extends Subsystem implements Sendable {
 	
 	private ADIS16448_IMU imu;
 	private double lastTimestamp;
+	private double resetOffset;
 	
 	public IMU() {
 		imu = new ADIS16448_IMU();
+		resetOffset = 0;
 		reset();
 		calibrate();
 	}

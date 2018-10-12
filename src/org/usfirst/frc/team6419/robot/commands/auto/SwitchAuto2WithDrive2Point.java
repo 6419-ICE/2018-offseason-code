@@ -1,6 +1,7 @@
 package org.usfirst.frc.team6419.robot.commands.auto;
 
 import org.usfirst.frc.team6419.robot.Robot;
+import org.usfirst.frc.team6419.robot.commands.OpenIntake;
 import org.usfirst.frc.team6419.robot.commands.OuttakeCube;
 import org.usfirst.frc.team6419.robot.commands.core.DriveToPoint;
 import org.usfirst.frc.team6419.robot.commands.core.RaiseLiftForTime;
@@ -19,14 +20,17 @@ public class SwitchAuto2WithDrive2Point extends CommandGroup {
     	if (DriverStation.getInstance().getGameSpecificMessage().charAt(0) == 'R') {
     		Robot.log(this, "AddParallel");
     		// Straight shot
-    		addSequential(new DriveToPoint(0, 104), 7);
+    		addSequential(new DriveToPoint(0, 104));
     	} else {
-    		addSequential(new DriveToPoint(0, 32), 5);
-    		addSequential(new DriveToPoint(-108, 0), 5);
-    		addSequential(new DriveToPoint(72, 0), 5);
+    		Robot.log(this, "Step 1");
+    		addSequential(new DriveToPoint(0, 32));
+    		Robot.log(this, "Step 2");
+    		addSequential(new DriveToPoint(-108, 0));
+    		Robot.log(this, "Step 3");
+    		addSequential(new DriveToPoint(72, 0));
     	}
-    	Robot.drivetrain.setSpeedLimit(1);
-    	addSequential(new OuttakeCube(), 3);
+    	//Robot.drivetrain.setSpeedLimit(1);
+    	addSequential(new OpenIntake());
     	
         // Add Commands here:
         // e.g. addSequential(new Command1());

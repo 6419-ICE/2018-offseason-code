@@ -1,6 +1,15 @@
 package org.usfirst.frc.team6419.robot;
 
+import org.opencv.core.Mat;
+
 public class Config {
+	
+	// 
+	public static final int drivetrainFrontLeftMotorPin = 2;
+	public static final int drivetrainFrontRightMotorPin = 1;
+	public static final int drivetrainBackLeftMotorPin = 4;
+	public static final int drivetrainBackRightMotorPin = 3;
+	
 	// Wheel diameter in inches
 	public static final double wheelDiameter = 6;
 	
@@ -29,7 +38,7 @@ public class Config {
 	public static final int liftMotorPin = 0;
 	
 	// Threshold for when the drive Talons are considered to have reached their target
-	public static final int driveTalonEncoderErrorThreshold = 1500;
+	public static final int driveTalonEncoderErrorThreshold = 150;
 	
 	// The PCM pins connected to the intake solenoid
 	public static final int intakeSolenoidPin0 = 0, intakeSolenoidPin1 = 3;
@@ -37,5 +46,7 @@ public class Config {
 	// PWM pins connected to the intake whe	el controllers
 	public static final int intakeR0 = 1, intakeR1 = 2, intakeL0 = 3, intakeL1 = 4;
 	
-	public static final int intakeUltrasonicInput = 5, intakeUltrasonicOutput = 6;
+	public static final int intakeUltrasonicInput = 0;
+	
+	public static final double recalibrationThreshold = Math.toRadians(15);
 }

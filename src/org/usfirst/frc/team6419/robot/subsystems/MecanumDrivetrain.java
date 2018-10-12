@@ -2,9 +2,9 @@ package org.usfirst.frc.team6419.robot.subsystems;
 
 import java.util.Arrays;
 
+import org.opencv.core.Mat;
 import org.usfirst.frc.team6419.robot.Config;
 import org.usfirst.frc.team6419.robot.Robot;
-import org.usfirst.frc.team6419.robot.RobotMap;
 import org.usfirst.frc.team6419.robot.commands.HandleMecanumDrive;
 import org.usfirst.frc.team6419.robot.core.PID;
 import org.usfirst.frc.team6419.robot.core.PIDTunings;
@@ -35,15 +35,16 @@ public class MecanumDrivetrain extends PIDSubsystem {
 	public boolean fieldRelative;
 	private double pidOutput = 0;
 	
-	public MecanumDrivetrain() {
+	public MecanumDrivetrain(int flPin, int frPin, int blPin, int brPin) {
 		// Args: kP, kI, kD, period, kf
 		super(0, 0, 0, 0.05, 0);
+		getPIDController().setAbsoluteTolerance(0.1);
 		
 		// Instantiate the Talons
-		frontLeft = new WPI_TalonSRX(RobotMap.FRONT_LEFT);
-		frontRight = new WPI_TalonSRX(RobotMap.FRONT_RIGHT);
-		backLeft = new WPI_TalonSRX(RobotMap.BACK_LEFT);
-		backRight = new WPI_TalonSRX(RobotMap.BACK_RIGHT);
+		frontLeft = new WPI_TalonSRX(flPin);
+		frontRight = new WPI_TalonSRX(frPin);
+		backLeft = new WPI_TalonSRX(blPin);
+		backRight = new WPI_TalonSRX(brPin);
 		
 		// Configure encoders as feedback sensors.  
 		frontLeft.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
@@ -97,10 +98,10 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		backRight.selectProfileSlot(0, 0);
 		
 		// Configure Talon PID deadband
-		frontLeft.configAllowableClosedloopError(0, 10, 0);
-		frontRight.configAllowableClosedloopError(0, 10, 0);
-		backLeft.configAllowableClosedloopError(0, 10, 0);
-		backRight.configAllowableClosedloopError(0, 10, 0);
+		frontLeft.configAllowableClosedloopError(0, Config.driveTalonEncoderErrorThreshold, 0);
+		frontRight.configAllowableClosedloopError(0, Config.driveTalonEncoderErrorThreshold, 0);
+		backLeft.configAllowableClosedloopError(0, Config.driveTalonEncoderErrorThreshold, 0);
+		backRight.configAllowableClosedloopError(0, Config.driveTalonEncoderErrorThreshold, 0);
 		
 		double kP = 0.1;
 		double kI = 0;
@@ -203,6 +204,40 @@ public class MecanumDrivetrain extends PIDSubsystem {
 		
 		getPIDController().setOutputRange(-1, 1);
 		getPIDController().setAbsoluteTolerance(0.025 * Math.PI);
+		
+		if (!Preferences.getInstance().containsKey("driving-P")) {
+			Preferences.getInstance().putDouble("driving-P", 0.1);
+		}
+		if (!Preferences.getInstance().containsKey("driving-I")) {
+			Preferences.getInstance().putDouble("driving-I", 0);
+		}
+		if (!Preferences.getInstance().containsKey("driving-D")) {
+			Preferences.getInstance().putDouble("driving-D", 0.5);
+		}
+		
+		double kP = Preferences.getInstance().getDouble("driving-P", 0.1);
+		double kI = Preferences.getInstance().getDouble("driving-I", 0);
+		double kD = Preferences.getInstance().getDouble("driving-D", 0.5);
+		
+		frontLeft.config_kF(0, 0, 0);
+		frontLeft.config_kP(0, kP, 0);
+		frontLeft.config_kI(0, kI, 0);
+		frontLeft.config_kD(0, kD, 0);
+		
+		frontRight.config_kF(0, 0, 0);
+		frontRight.config_kP(0, kP, 0);
+		frontRight.config_kI(0, kI, 0);
+		frontRight.config_kD(0, kD, 0);
+		
+		backLeft.config_kF(0, 0, 0);
+		backLeft.config_kP(0, kP, 0);
+		backLeft.config_kI(0, kI, 0);
+		backLeft.config_kD(0, kD, 0);
+		
+		backRight.config_kF(0, 0, 0);
+		backRight.config_kP(0, kP, 0);
+		backRight.config_kI(0, kI, 0);
+		backRight.config_kD(0, kD, 0);
     }
     
     public void updateCascadingPIDs() {
@@ -284,7 +319,7 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * @return true when at target, false otherwise
      */
     public boolean targetHeadingReached() {
-    	return getPIDController().onTarget();
+    	return Math.abs(getPIDController().getError()) < 0.1;
     }
     
     /**
@@ -294,12 +329,22 @@ public class MecanumDrivetrain extends PIDSubsystem {
     public void setTurningPidEnabled(boolean enabled) {
     	turningPidActive = enabled;
     	if (enabled) {
+    		//setSpeedLimit(0.5);
     		Robot.log(this, "Turning PID enabled");
     		getPIDController().enable();
     	} else {
+    		//setSpeedLimit(1);
     		Robot.log(this, "Turning PID disabled");
     		getPIDController().disable();
     	}
+    }
+    
+    public boolean turningPidEnabled() {
+    	return turningPidActive;
+    }
+    
+    public double getTurningPidError() {
+    	return getPIDController().getError();
     }
     
     /**
@@ -448,12 +493,30 @@ public class MecanumDrivetrain extends PIDSubsystem {
     	backRight.set(ControlMode.Position, target);
     }
     
+    public int getFLError() {
+    	return frontLeft.getClosedLoopTarget(0) - frontLeft.getSelectedSensorPosition(0);
+    }
+    
+    public int getFRError() {
+    	return frontRight.getClosedLoopTarget(0) - frontRight.getSelectedSensorPosition(0);
+    }
+    
+    public int getBLError() {
+    	return backLeft.getClosedLoopTarget(0) - backLeft.getSelectedSensorPosition(0);
+    }
+    
+    public int getBRError() {
+    	return backRight.getClosedLoopTarget(0) - backRight.getSelectedSensorPosition(0);
+    }
+    
     /**
      * Has the front left wheel reached it's target?
      * @return true if target reached
      */
     public boolean flTargetReached() {
-    	return Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontLeft.getClosedLoopTarget(0) - frontLeft.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return (Math.abs(frontLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold &&
+    			Math.abs(getFLError()) < Config.driveTalonEncoderErrorThreshold * 5)
+    			|| Math.abs(getFLError()) < Config.driveTalonEncoderErrorThreshold;
     }
     
     /**
@@ -461,7 +524,9 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * @return true if target reached
      */
     public boolean frTargetReached() {
-    	return Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(frontRight.getClosedLoopTarget(0) - frontRight.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return (Math.abs(frontRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold &&
+    			Math.abs(getFRError()) < Config.driveTalonEncoderErrorThreshold * 5)
+    			|| Math.abs(getFRError()) < Config.driveTalonEncoderErrorThreshold;
     }
     
     /**
@@ -469,7 +534,9 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * @return true if target reached
      */
     public boolean blTargetReached() {
-    	return Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold && Math.abs(backLeft.getClosedLoopTarget(0) - backLeft.getSelectedSensorPosition(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return (Math.abs(backLeft.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold &&
+    			Math.abs(getBLError()) < Config.driveTalonEncoderErrorThreshold * 5)
+    			|| Math.abs(getBLError()) < Config.driveTalonEncoderErrorThreshold;
     }
     
     /**
@@ -477,7 +544,9 @@ public class MecanumDrivetrain extends PIDSubsystem {
      * @return true if target reached
      */
     public boolean brTargetReached() {
-    	return Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold;// && Math.abs(backRight.getClosedLoopError(0)) < Config.driveTalonEncoderErrorThreshold;
+    	return (Math.abs(backRight.getSelectedSensorVelocity(0)) < Config.driveTalonSpeedThreshold &&
+    			Math.abs(getBRError()) < Config.driveTalonEncoderErrorThreshold * 5)
+    			|| Math.abs(getBRError()) < Config.driveTalonEncoderErrorThreshold;
     }
     
     /**

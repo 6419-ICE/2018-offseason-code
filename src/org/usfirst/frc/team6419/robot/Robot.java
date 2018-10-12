@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto;
 import org.usfirst.frc.team6419.robot.commands.auto.SwitchAuto2ElectricBogaloo;
@@ -61,15 +62,19 @@ public class Robot extends TimedRobot {
 
 	public static IMU imu = new IMU();
 
-	public static MecanumDrivetrain drivetrain = new MecanumDrivetrain();
+	public static MecanumDrivetrain drivetrain = new MecanumDrivetrain(Config.drivetrainFrontLeftMotorPin, Config.drivetrainFrontRightMotorPin, Config.drivetrainBackLeftMotorPin, Config.drivetrainBackRightMotorPin);
 
 	public static Lift lift = new Lift(Config.liftMotorPin);
 
-	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1, Config.intakeUltrasonicInput, Config.intakeUltrasonicOutput);
+	public static Intake intake = new Intake(Config.intakeSolenoidPin0, Config.intakeSolenoidPin1, Config.intakeR0, Config.intakeR1, Config.intakeL0, Config.intakeL1, Config.intakeUltrasonicInput);
 	
 	public static OI m_oi;
 	
-	private java.util.Timer pidSyncLoop = new java.util.Timer();
+	private java.util.Timer pidSyncLoop;
+	private java.util.Timer imuCalibrationLoop;
+	
+	private AtomicBoolean hasBeenEnabled = new AtomicBoolean(false);
+	private double heading = 0;
 
 	private class PidSyncTask extends TimerTask {
 		
@@ -78,6 +83,23 @@ public class Robot extends TimedRobot {
 			if (DriverStation.getInstance().isDisabled()) {
 				Robot.drivetrain.configurePID();
 			}
+		}
+	}
+	
+	private class IMUCalibrationWatchdog extends TimerTask {
+		
+		@Override
+		public void run() {
+			if (DriverStation.getInstance().isDisabled() && !hasBeenEnabled.get()) {
+				double drift = Math.abs(imu.getHeading() - heading);
+				if (drift > Config.recalibrationThreshold) {
+					log("IMU has drifted by %f, recalibrating...", drift);
+					imu.calibrate();
+					imu.reset();
+				}
+				heading = imu.getHeading();
+			}
+			hasBeenEnabled.set(false);
 		}
 	}
 	
@@ -142,6 +164,7 @@ public class Robot extends TimedRobot {
 	 */
 	
 	private PidSyncTask syncTask;
+	private IMUCalibrationWatchdog imuCalibrator;
 
 	@Override
 	public void robotInit() {
@@ -156,10 +179,16 @@ public class Robot extends TimedRobot {
 		}
 		
 		syncTask = new PidSyncTask();
+		imuCalibrator = new IMUCalibrationWatchdog();
 		
 		// Setup PidSyncTask::run to be executed every 2 seconds.
 		pidSyncLoop = new java.util.Timer();
 		pidSyncLoop.scheduleAtFixedRate(syncTask, 2000, 2000);
+		
+		imuCalibrationLoop = new java.util.Timer();
+		imuCalibrationLoop.scheduleAtFixedRate(imuCalibrator, 500, 500);
+		
+		//drivetrain.setSpeedLimit(0.5);
 	}
 
 	/**
@@ -193,6 +222,7 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
+		hasBeenEnabled.set(true);
 		imu.reset();
 		Auto selected = m_chooser.getSelected();
 		if (selected == Auto.LEFT || selected == Auto.RIGHT) {
@@ -220,6 +250,8 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
+		hasBeenEnabled.set(true);
+		
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -243,6 +275,7 @@ public class Robot extends TimedRobot {
 	
 	@Override
 	public void testInit() {
+		hasBeenEnabled.set(true);
 		testTime = Timer.getFPGATimestamp();
 	}
 	
